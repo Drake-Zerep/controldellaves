@@ -148,6 +148,7 @@
             right: 0;
             max-height: 200px;
             overflow-y: auto;
+            background-color: white;
         }
         
         .autocomplete-items div {
@@ -297,28 +298,141 @@
         // Mostrar fecha actual
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES');
 
-        // Base de datos de llaves predefinidas
+        // Base de datos de llaves predefinidas (actualizada con la lista proporcionada)
         const keyDatabase = [
-            { number: "1", department: "Recepción Principal" },
-            { number: "2", department: "Sala de Juntas A" },
-            { number: "3", department: "Sala de Juntas B" },
-            { number: "4", department: "Almacén Planta Baja" },
-            { number: "5", department: "Archivo" },
-            { number: "6", department: "Sistemas" },
-            { number: "7", department: "Contabilidad" },
-            { number: "8", department: "Dirección" },
-            { number: "9", department: "Cocina" },
-            { number: "10", department: "Comedor" },
-            { number: "11", department: "Limpieza" },
-            { number: "12", department: "Mantenimiento" },
-            { number: "13", department: "Sala de Servidores" },
-            { number: "14", department: "Oficina Chef" },
-            { number: "15", department: "Parking" },
-            { number: "16", department: "Terraza" },
-            { number: "17", department: "Sala Descanso" },
-            { number: "18", department: "Baño Planta 1" },
-            { number: "19", department: "Baño Planta 2" },
-            { number: "20", department: "Entrada Trasera" }
+            { number: "1", department: "Economato" },
+            { number: "2", department: "Restaurante babbo american grill" },
+            { number: "3", department: "Cocina babbo american grill" },
+            { number: "4", department: "Coco café" },
+            { number: "5", department: "Copia (52) Neveras" },
+            { number: "6", department: "Restaurante las rocas - barra" },
+            { number: "7", department: "Sala kentia" },
+            { number: "8", department: "Lava bar" },
+            { number: "9", department: "" },
+            { number: "10", department: "Rest. ugo e vandino" },
+            { number: "11", department: "Oficina director" },
+            { number: "12", department: "Oficina director a.b." },
+            { number: "13", department: "Candado neveras ugo&vandino" },
+            { number: "14", department: "Oficina del cheff" },
+            { number: "15", department: "Camara de cocinas 1" },
+            { number: "16", department: "Sugar reef" },
+            { number: "17", department: "Ex sala de arte" },
+            { number: "18", department: "Sunset bar" },
+            { number: "19", department: "Barefoot grill" },
+            { number: "20", department: "Lenceria" },
+            { number: "21", department: "Jaula vidrios (guardan envases de bebidas vacios)" },
+            { number: "22", department: "Lavanderia" },
+            { number: "23", department: "Room-service" },
+            { number: "24", department: "Almacen de plateria (al lado corte ingles)" },
+            { number: "25", department: "Oficina chakib y chefi." },
+            { number: "26", department: "Oficinas de recepcion" },
+            { number: "27", department: "Oficina alimentacion y bebidas" },
+            { number: "28", department: "Candado bombonas economato" },
+            { number: "29", department: "Ex sala juegos" },
+            { number: "30", department: "Puerta madera propietarios" },
+            { number: "31", department: "Jaula vidrios(envases vacios (2ª puerta)" },
+            { number: "32", department: "" },
+            { number: "33", department: "" },
+            { number: "34", department: "" },
+            { number: "35", department: "" },
+            { number: "36", department: "" },
+            { number: "37", department: "" },
+            { number: "38", department: "" },
+            { number: "39", department: "" },
+            { number: "40", department: "Piscina rocas" },
+            { number: "41", department: "Almacen gimnasio exterior" },
+            { number: "42", department: "Piscinas mimosas" },
+            { number: "43", department: "Beach club bar (rocas)" },
+            { number: "44", department: "Vehiculo las rocas" },
+            { number: "45", department: "Comedor de personal (entrada principal, desde cctv)" },
+            { number: "46", department: "" },
+            { number: "47", department: "Control de cctv - H24 y despacho direccion" },
+            { number: "48", department: "El corte ingles" },
+            { number: "49", department: "Control cctv y copia parking jardineros" },
+            { number: "50", department: "Llavero de seguridad" },
+            { number: "51", department: "Cuarto vestuario vs" },
+            { number: "52", department: "Llave office lounge club" },
+            { number: "53", department: "Mueble liquido plateria" },
+            { number: "54", department: "Puertas cocina trattoria" },
+            { number: "55", department: "Cuarto y camaras de pasteleria" },
+            { number: "56", department: "Camaras nuevas( al lado economato) candado nevera de zumos" },
+            { number: "57", department: "Enfermeria" },
+            { number: "58", department: "Neveras cocina las rocas" },
+            { number: "59", department: "Verduras y frutas, carniceria, pescaderia, italiano." },
+            { number: "60", department: "Gimnasio" },
+            { number: "61", department: "Guarderia o miniclub" },
+            { number: "62", department: "Puertas perimetrales mimosa" },
+            { number: "63", department: "" },
+            { number: "64", department: "Caja de llaves interno room service" },
+            { number: "65", department: "Llaves jardineria (garden care)" },
+            { number: "66", department: "" },
+            { number: "67", department: "Sobre-jardineria (juan luis)" },
+            { number: "68", department: "Cuarto de viveres cocina central" },
+            { number: "69", department: "Oficina maitre mimosa" },
+            { number: "70", department: "Copia de la nº 23" },
+            { number: "71", department: "Almacen de fruta y verduras" },
+            { number: "72", department: "Acceso a cuevas por pasillo cocinas" },
+            { number: "73", department: "Copia de nº 78 (despensa en carniceria)" },
+            { number: "74", department: "Verja de hierro acceso a cocinas el churrasco" },
+            { number: "75", department: "Cristalera de las cuevas 1 y 2" },
+            { number: "76", department: "Cristalera de restaurante mimosas 3 y 4" },
+            { number: "77", department: "Spa aura-soma y gym" },
+            { number: "78", department: "" },
+            { number: "79", department: "Cancela cascadillas" },
+            { number: "80", department: "Copia de la nº 15" },
+            { number: "81", department: "Sobrante llavero n.25" },
+            { number: "82", department: "Copia llave n. 46" },
+            { number: "83", department: "Sala inca nº 1 (avis)" },
+            { number: "84", department: "Sala inca nº 2" },
+            { number: "85", department: "Sala galeria de arte" },
+            { number: "86", department: "Sala ficus" },
+            { number: "87", department: "" },
+            { number: "88", department: "Sala adelfas" },
+            { number: "89", department: "Lavanderia copia" },
+            { number: "90", department: "Copias de la nº 55" },
+            { number: "91", department: "Comedor personal (acceso a lavanderia)" },
+            { number: "92", department: "" },
+            { number: "93", department: "Copias de la nº 73" },
+            { number: "94", department: "Copias de la llave cuarto plateria limpieza lado ascensor y cuarto cartón y papel" },
+            { number: "95", department: "Copia de nº 68" },
+            { number: "96", department: "" },
+            { number: "98", department: "Ascensores otis" },
+            { number: "99", department: "Ascensores otis" },
+            { number: "100", department: "" },
+            { number: "101", department: "Puerta madera propietarios" },
+            { number: "102", department: "Copia de nº 7 (cocina rocas)" },
+            { number: "103", department: "Objetos perdidos" },
+            { number: "104", department: "Copia de nº 19 (barfoot grill)" },
+            { number: "105", department: "Copia de nº 45 (comedor personal)" },
+            { number: "106", department: "Copia de nº 54 (cocina trattoria)" },
+            { number: "107", department: "Copia de nº 55 (cuarto desayuno)" },
+            { number: "108", department: "Copia de nº 60" },
+            { number: "109", department: "Copia de nº 22 (lavanderia)" },
+            { number: "110", department: "Jaula vidrios (copia 21)" },
+            { number: "111", department: "" },
+            { number: "112", department: "Traspalet Electrico" },
+            { number: "116", department: "Cardex cliente recepcion" },
+            { number: "117", department: "Maletero botones" },
+            { number: "118", department: "Acceso coco café (copia N4)" },
+            { number: "119", department: "Candado parking jardineros" },
+            { number: "121", department: "Copia cuarto pisceno (40)" },
+            { number: "901", department: "Caja fuerte" },
+            { number: "902", department: "Caja fuerte RECEPCION" },
+            { number: "903", department: "Caja fuerte rocas" },
+            { number: "904", department: "Caja fuerte pinxcos" },
+            { number: "905", department: "Caja fuerte trattoria" },
+            { number: "906", department: "Caja fuerte barfoot grill" },
+            { number: "907", department: "Caja fuerte coco" },
+            { number: "908", department: "Caja fuerte" },
+            { number: "908", department: "Caja tides" },
+            { number: "909", department: "Caja fuerte" },
+            { number: "910", department: "Caja fuerte club" },
+            { number: "911", department: "Caja fuerte sunset" },
+            { number: "912", department: "Caja fuerte sugar reef" },
+            { number: "913", department: "Caja fuerte world café" },
+            { number: "914", department: "Caja fuerte lava" },
+            { number: "915", department: "Caja fuerte babbo american grill" },
+            { number: "916", department: "Caja fuerte RECEPCION" }
         ];
 
         // Establecer fecha y hora actual por defecto
@@ -382,6 +496,16 @@
                     });
                     autocompleteContainer.appendChild(item);
                 });
+                
+                // Si no hay coincidencias, mostrar mensaje
+                if (matches.length === 0) {
+                    const noResults = document.createElement('div');
+                    noResults.innerHTML = 'No se encontraron llaves';
+                    noResults.style.padding = '10px';
+                    noResults.style.color = '#666';
+                    noResults.style.fontStyle = 'italic';
+                    autocompleteContainer.appendChild(noResults);
+                }
             });
             
             // Cerrar autocompletado al hacer clic fuera
@@ -401,6 +525,13 @@
             const pickupDate = document.getElementById('pickup-date').value;
             const pickupTime = document.getElementById('pickup-time').value;
             const personName = document.getElementById('person-name').value;
+            
+            // Validar que se haya seleccionado una llave válida
+            const keyExists = keyDatabase.some(key => key.number === keyNumber);
+            if (!keyExists) {
+                alert('Por favor, seleccione una llave válida de la lista');
+                return;
+            }
             
             const pickupDateTime = combineDateTime(pickupDate, pickupTime);
             
@@ -624,4 +755,3 @@
     </script>
 </body>
 </html>
-
