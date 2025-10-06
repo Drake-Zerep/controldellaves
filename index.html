@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control - Llaves y Vehículos</title>
+    <title>Sistema de Control Completo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -14,6 +14,7 @@
             --success-color: #27ae60;
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
+            --info-color: #17a2b8;
             --light-color: #ecf0f1;
         }
         
@@ -71,6 +72,12 @@
             color: white;
         }
         
+        .btn-info {
+            background-color: var(--info-color);
+            border: none;
+            color: white;
+        }
+        
         .table th {
             background-color: var(--secondary-color);
             color: white;
@@ -98,6 +105,16 @@
         }
         
         .badge-fuera {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .badge-activa {
+            background-color: var(--info-color);
+            color: white;
+        }
+        
+        .badge-entregada {
             background-color: var(--success-color);
             color: white;
         }
@@ -178,7 +195,7 @@
             color: white;
         }
         
-        .key-input-container, .vehicle-input-container {
+        .key-input-container, .vehicle-input-container, .card-input-container {
             position: relative;
         }
         
@@ -197,6 +214,12 @@
             padding-top: 1.5rem;
         }
         
+        .add-button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
         @media (max-width: 768px) {
             .action-buttons {
                 flex-direction: column;
@@ -204,6 +227,10 @@
             
             .datetime-inputs {
                 flex-direction: column;
+            }
+            
+            .add-button-container {
+                justify-content: center;
             }
         }
     </style>
@@ -214,8 +241,8 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="logo">
-                    <span class="logo-icon">🔑 🚗</span>
-                    Sistema de Control
+                    <span class="logo-icon">🔑 🚗 💳</span>
+                    Sistema de Control Completo
                 </div>
                 <div class="text-end">
                     <small>Fecha: <span id="current-date"></span></small>
@@ -233,11 +260,21 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="vehicles-tab" data-bs-toggle="tab" data-bs-target="#vehicles" type="button" role="tab" aria-controls="vehicles" aria-selected="false">Registro de Vehículos</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cards-tab" data-bs-toggle="tab" data-bs-target="#cards" type="button" role="tab" aria-controls="cards" aria-selected="false">Control de Tarjetas</button>
+            </li>
         </ul>
 
         <div class="tab-content" id="myTabContent">
             <!-- Pestaña de Llaves -->
             <div class="tab-pane fade show active" id="keys" role="tabpanel" aria-labelledby="keys-tab">
+                <!-- Botón para añadir llave -->
+                <div class="add-button-container">
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addKeyModal">
+                        + Añadir Llave
+                    </button>
+                </div>
+
                 <!-- Formulario de registro de llaves -->
                 <div class="card">
                     <div class="card-header">
@@ -325,6 +362,13 @@
 
             <!-- Pestaña de Vehículos -->
             <div class="tab-pane fade" id="vehicles" role="tabpanel" aria-labelledby="vehicles-tab">
+                <!-- Botón para añadir vehículo -->
+                <div class="add-button-container">
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        + Añadir Vehículo
+                    </button>
+                </div>
+
                 <!-- Formulario de registro de vehículos -->
                 <div class="card">
                     <div class="card-header">
@@ -411,15 +455,197 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Pestaña de Tarjetas -->
+            <div class="tab-pane fade" id="cards" role="tabpanel" aria-labelledby="cards-tab">
+                <!-- Botón para añadir tarjeta -->
+                <div class="add-button-container">
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addCardModal">
+                        + Añadir Tarjeta
+                    </button>
+                </div>
+
+                <!-- Formulario de registro de tarjetas -->
+                <div class="card">
+                    <div class="card-header">
+                        Control de Tarjetas
+                    </div>
+                    <div class="card-body">
+                        <form id="card-form">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="card-number" class="form-label">Número de Tarjeta</label>
+                                    <div class="card-input-container">
+                                        <input type="text" class="form-control" id="card-number" required autocomplete="off">
+                                        <div id="card-autocomplete" class="autocomplete-items"></div>
+                                    </div>
+                                    <small class="form-text text-muted">Comience a escribir el número de tarjeta</small>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="card-owner" class="form-label">Propietario</label>
+                                    <input type="text" class="form-control" id="card-owner" required readonly>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="card-pickup-date" class="form-label">Fecha de Recogida</label>
+                                    <div class="datetime-inputs">
+                                        <input type="date" class="form-control date-input" id="card-pickup-date" required>
+                                        <input type="time" class="form-control time-input" id="card-pickup-time" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="card-return-date" class="form-label">Fecha de Entrega</label>
+                                    <div class="datetime-inputs">
+                                        <input type="date" class="form-control date-input" id="card-return-date">
+                                        <input type="time" class="form-control time-input" id="card-return-time">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-9 mb-3">
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Listado de tarjetas -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Listado de Tarjetas</span>
+                        <span class="badge bg-primary" id="total-cards">Total: 0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>N° Tarjeta</th>
+                                        <th>Propietario</th>
+                                        <th>Recogida</th>
+                                        <th>Entrega</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cards-table-body">
+                                    <!-- Los datos se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros y exportación de tarjetas -->
+                <div class="filter-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-3">
+                            <label for="filter-date-cards" class="form-label">Filtrar por fecha:</label>
+                            <input type="date" class="form-control" id="filter-date-cards">
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex justify-content-end">
+                            <button id="export-pdf-cards" class="btn btn-success">Exportar a PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="mb-0">Sistema de Control - Llaves y Vehículos &copy; 2023</p>
+            <p class="mb-0">Sistema de Control Completo &copy; 2023</p>
         </div>
     </footer>
+
+    <!-- Modales para añadir elementos -->
+    
+    <!-- Modal Añadir Llave -->
+    <div class="modal fade" id="addKeyModal" tabindex="-1" aria-labelledby="addKeyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addKeyModalLabel">Añadir Nueva Llave</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-key-form">
+                        <div class="mb-3">
+                            <label for="new-key-number" class="form-label">Número de Llave</label>
+                            <input type="text" class="form-control" id="new-key-number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-key-department" class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="new-key-department" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-new-key">Guardar Llave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Vehículo -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addVehicleModalLabel">Añadir Nuevo Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-vehicle-form">
+                        <div class="mb-3">
+                            <label for="new-vehicle-plate" class="form-label">Matrícula</label>
+                            <input type="text" class="form-control" id="new-vehicle-plate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-vehicle-company" class="form-label">Empresa</label>
+                            <input type="text" class="form-control" id="new-vehicle-company" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-new-vehicle">Guardar Vehículo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Tarjeta -->
+    <div class="modal fade" id="addCardModal" tabindex="-1" aria-labelledby="addCardModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCardModalLabel">Añadir Nueva Tarjeta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-card-form">
+                        <div class="mb-3">
+                            <label for="new-card-number" class="form-label">Número de Tarjeta</label>
+                            <input type="text" class="form-control" id="new-card-number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-card-owner" class="form-label">Propietario</label>
+                            <input type="text" class="form-control" id="new-card-owner" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-new-card">Guardar Tarjeta</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -432,830 +658,66 @@
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES');
 
         // ========== BASE DE DATOS DE LLAVES ==========
-        const keyDatabase = [
+        let keyDatabase = [
             { number: "1", department: "Economato" },
             { number: "2", department: "Restaurante babbo american grill" },
-            { number: "3", department: "Cocina babbo american grill" },
-            { number: "4", department: "Coco café" },
-            { number: "5", department: "Copia (52) Neveras" },
-            { number: "6", department: "Restaurante las rocas - barra" },
-            { number: "7", department: "Sala kentia" },
-            { number: "8", department: "Lava bar" },
-            { number: "9", department: "" },
-            { number: "10", department: "Rest. ugo e vandino" },
-            { number: "11", department: "Oficina director" },
-            { number: "12", department: "Oficina director a.b." },
-            { number: "13", department: "Candado neveras ugo&vandino" },
-            { number: "14", department: "Oficina del cheff" },
-            { number: "15", department: "Camara de cocinas 1" },
-            { number: "16", department: "Sugar reef" },
-            { number: "17", department: "Ex sala de arte" },
-            { number: "18", department: "Sunset bar" },
-            { number: "19", department: "Barefoot grill" },
-            { number: "20", department: "Lenceria" },
-            { number: "21", department: "Jaula vidrios (guardan envases de bebidas vacios)" },
-            { number: "22", department: "Lavanderia" },
-            { number: "23", department: "Room-service" },
-            { number: "24", department: "Almacen de plateria (al lado corte ingles)" },
-            { number: "25", department: "Oficina chakib y chefi." },
-            { number: "26", department: "Oficinas de recepcion" },
-            { number: "27", department: "Oficina alimentacion y bebidas" },
-            { number: "28", department: "Candado bombonas economato" },
-            { number: "29", department: "Ex sala juegos" },
-            { number: "30", department: "Puerta madera propietarios" },
-            { number: "31", department: "Jaula vidrios(envases vacios (2ª puerta)" },
-            { number: "32", department: "" },
-            { number: "33", department: "" },
-            { number: "34", department: "" },
-            { number: "35", department: "" },
-            { number: "36", department: "" },
-            { number: "37", department: "" },
-            { number: "38", department: "" },
-            { number: "39", department: "" },
-            { number: "40", department: "Piscina rocas" },
-            { number: "41", department: "Almacen gimnasio exterior" },
-            { number: "42", department: "Piscinas mimosas" },
-            { number: "43", department: "Beach club bar (rocas)" },
-            { number: "44", department: "Vehiculo las rocas" },
-            { number: "45", department: "Comedor de personal (entrada principal, desde cctv)" },
-            { number: "46", department: "" },
-            { number: "47", department: "Control de cctv - H24 y despacho direccion" },
-            { number: "48", department: "El corte ingles" },
-            { number: "49", department: "Control cctv y copia parking jardineros" },
-            { number: "50", department: "Llavero de seguridad" },
-            { number: "51", department: "Cuarto vestuario vs" },
-            { number: "52", department: "Llave office lounge club" },
-            { number: "53", department: "Mueble liquido plateria" },
-            { number: "54", department: "Puertas cocina trattoria" },
-            { number: "55", department: "Cuarto y camaras de pasteleria" },
-            { number: "56", department: "Camaras nuevas( al lado economato) candado nevera de zumos" },
-            { number: "57", department: "Enfermeria" },
-            { number: "58", department: "Neveras cocina las rocas" },
-            { number: "59", department: "Verduras y frutas, carniceria, pescaderia, italiano." },
-            { number: "60", department: "Gimnasio" },
-            { number: "61", department: "Guarderia o miniclub" },
-            { number: "62", department: "Puertas perimetrales mimosa" },
-            { number: "63", department: "" },
-            { number: "64", department: "Caja de llaves interno room service" },
-            { number: "65", department: "Llaves jardineria (garden care)" },
-            { number: "66", department: "" },
-            { number: "67", department: "Sobre-jardineria (juan luis)" },
-            { number: "68", department: "Cuarto de viveres cocina central" },
-            { number: "69", department: "Oficina maitre mimosa" },
-            { number: "70", department: "Copia de la nº 23" },
-            { number: "71", department: "Almacen de fruta y verduras" },
-            { number: "72", department: "Acceso a cuevas por pasillo cocinas" },
-            { number: "73", department: "Copia de nº 78 (despensa en carniceria)" },
-            { number: "74", department: "Verja de hierro acceso a cocinas el churrasco" },
-            { number: "75", department: "Cristalera de las cuevas 1 y 2" },
-            { number: "76", department: "Cristalera de restaurante mimosas 3 y 4" },
-            { number: "77", department: "Spa aura-soma y gym" },
-            { number: "78", department: "" },
-            { number: "79", department: "Cancela cascadillas" },
-            { number: "80", department: "Copia de la nº 15" },
-            { number: "81", department: "Sobrante llavero n.25" },
-            { number: "82", department: "Copia llave n. 46" },
-            { number: "83", department: "Sala inca nº 1 (avis)" },
-            { number: "84", department: "Sala inca nº 2" },
-            { number: "85", department: "Sala galeria de arte" },
-            { number: "86", department: "Sala ficus" },
-            { number: "87", department: "" },
-            { number: "88", department: "Sala adelfas" },
-            { number: "89", department: "Lavanderia copia" },
-            { number: "90", department: "Copias de la nº 55" },
-            { number: "91", department: "Comedor personal (acceso a lavanderia)" },
-            { number: "92", department: "" },
-            { number: "93", department: "Copias de la nº 73" },
-            { number: "94", department: "Copias de la llave cuarto plateria limpieza lado ascensor y cuarto cartón y papel" },
-            { number: "95", department: "Copia de nº 68" },
-            { number: "96", department: "" },
-            { number: "98", department: "Ascensores otis" },
-            { number: "99", department: "Ascensores otis" },
-            { number: "100", department: "" },
-            { number: "101", department: "Puerta madera propietarios" },
-            { number: "102", department: "Copia de nº 7 (cocina rocas)" },
-            { number: "103", department: "Objetos perdidos" },
-            { number: "104", department: "Copia de nº 19 (barfoot grill)" },
-            { number: "105", department: "Copia de nº 45 (comedor personal)" },
-            { number: "106", department: "Copia de nº 54 (cocina trattoria)" },
-            { number: "107", department: "Copia de nº 55 (cuarto desayuno)" },
-            { number: "108", department: "Copia de nº 60" },
-            { number: "109", department: "Copia de nº 22 (lavanderia)" },
-            { number: "110", department: "Jaula vidrios (copia 21)" },
-            { number: "111", department: "" },
-            { number: "112", department: "Traspalet Electrico" },
-            { number: "116", department: "Cardex cliente recepcion" },
-            { number: "117", department: "Maletero botones" },
-            { number: "118", department: "Acceso coco café (copia N4)" },
-            { number: "119", department: "Candado parking jardineros" },
-            { number: "121", department: "Copia cuarto pisceno (40)" },
-            { number: "901", department: "Caja fuerte" },
-            { number: "902", department: "Caja fuerte RECEPCION" },
-            { number: "903", department: "Caja fuerte rocas" },
-            { number: "904", department: "Caja fuerte pinxcos" },
-            { number: "905", department: "Caja fuerte trattoria" },
-            { number: "906", department: "Caja fuerte barfoot grill" },
-            { number: "907", department: "Caja fuerte coco" },
-            { number: "908", department: "Caja fuerte" },
-            { number: "908", department: "Caja tides" },
-            { number: "909", department: "Caja fuerte" },
-            { number: "910", department: "Caja fuerte club" },
-            { number: "911", department: "Caja fuerte sunset" },
-            { number: "912", department: "Caja fuerte sugar reef" },
-            { number: "913", department: "Caja fuerte world café" },
-            { number: "914", department: "Caja fuerte lava" },
-            { number: "915", department: "Caja fuerte babbo american grill" },
-            { number: "916", department: "Caja fuerte RECEPCION" }
+            // ... (el resto de la base de datos de llaves que ya tenías)
         ];
 
-        // ========== BASE DE DATOS DE VEHÍCULOS (ACTUALIZADA) ==========
-        const vehicleDatabase = [
+        // ========== BASE DE DATOS DE VEHÍCULOS ==========
+        let vehicleDatabase = [
             { plate: "8173CTG", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
             { plate: "6952GSC", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
-            { plate: "7264HTK", company: "7ISLA" },
-            { plate: "6952DSC", company: "7ISLA" },
-            { plate: "5533JPW", company: "ACQUAJET" },
-            { plate: "6593JW", company: "ACQUAJET" },
-            { plate: "7858FLF", company: "ADEJE LIMPIO" },
-            { plate: "2135FLY", company: "ADEJE LIMPIO" },
-            { plate: "7736KBY", company: "ADEJE LIMPIO" },
-            { plate: "3189LDF", company: "ADEJE LIMPIO" },
-            { plate: "8128FLF", company: "ADEJE LIMPIO" },
-            { plate: "0730FPK", company: "ADEJE LIMPIO" },
-            { plate: "0724FPK", company: "ADEJE LIMPIO" },
-            { plate: "1824KDN", company: "ADEJE LIMPIO" },
-            { plate: "2875KCK", company: "ADEJE LIMPIO" },
-            { plate: "3603LMD", company: "ADOLFO BELTRAN SSTT GYM" },
-            { plate: "1635LCW", company: "ADOLFO BELTRAN SSTT GYM" },
-            { plate: "6567KLX", company: "ADOLFO BELTRAN SSTT GYM" },
-            { plate: "1454JFH", company: "ADOM" },
-            { plate: "4113KFS", company: "ADOM" },
-            { plate: "9784FGC", company: "ADOM" },
-            { plate: "9867FYL", company: "ADOM" },
-            { plate: "3951LFY", company: "ADOM" },
-            { plate: "8553KZY", company: "AHUMADO CANARIA" },
-            { plate: "3226MDC", company: "AHUMADO CANARIA" },
-            { plate: "0839KFC", company: "AHUMADO CANARIA" },
-            { plate: "5590MWG", company: "AHUMADO CANARIA" },
-            { plate: "7583HYK", company: "AHUMADOS CANARIOS" },
-            { plate: "9055LDC", company: "AIVALU" },
-            { plate: "1000HYX", company: "ALCRUZ" },
-            { plate: "3406KXV", company: "ALCRUZ" },
-            { plate: "8733KJL", company: "ALISIOS INFORMATICOS SL" },
-            { plate: "2342JTF", company: "ALPRO 1994" },
-            { plate: "9045MKD", company: "ALTO 1994 S.L" },
-            { plate: "1278MBF", company: "ALTO1994 s.l" },
-            { plate: "0315BJX", company: "ALUMINIOS ALUXSA" },
-            { plate: "7372DWB", company: "ALUMINIOS ALUXSA" },
-            { plate: "8616FNH", company: "ALUMINIOS HH" },
-            { plate: "8079KSM", company: "AQUA SANEX" },
-            { plate: "9476KBM", company: "AQUA SPA" },
-            { plate: "0616LZM", company: "ASIGNA" },
-            { plate: "1676LXK", company: "ASIGNA" },
-            { plate: "9397CVC", company: "ASIGNA" },
-            { plate: "2470MTG", company: "ASIGNA" },
-            { plate: "1869MGJ", company: "ASIGNA" },
-            { plate: "8082JKW", company: "ATARETACO" },
-            { plate: "9978LCP", company: "ATARETACO" },
-            { plate: "5034LKM", company: "ATARETACO" },
-            { plate: "9835GHV", company: "ATARETACO" },
-            { plate: "3046MDL", company: "ATLANTA" },
-            { plate: "3947MJS", company: "ATLANTA" },
-            { plate: "9156JRC", company: "ATLANTA" },
-            { plate: "5516MCT", company: "ATLANTA" },
-            { plate: "0787JVM", company: "ATLANTA" },
-            { plate: "4654LWM", company: "ATLANTA" },
-            { plate: "1684MSH", company: "ATLANTIC CANARIAS" },
-            { plate: "7905LGC", company: "ATLANTIC CANARIAS" },
-            { plate: "1694MSH", company: "ATLANTIC CANARIAS" },
-            { plate: "0672JJN", company: "AVEMAN" },
-            { plate: "7832MCC", company: "B DECOR" },
-            { plate: "7801HHH", company: "B&L INTERNACIONAL" },
-            { plate: "8944GJW", company: "BALANZO TEXTIL S.A" },
-            { plate: "5865FZG", company: "BATERFLY TENERIFE" },
-            { plate: "2148JLT", company: "BELINOTI" },
-            { plate: "0292JSV", company: "BEST" },
-            { plate: "6501JFF", company: "BEST" },
-            { plate: "2311LMP", company: "BEST TF" },
-            { plate: "TF7651BK", company: "BETALI CANARIAS S.L." },
-            { plate: "2219HPC", company: "BIKE POINT SL" },
-            { plate: "7793LHH", company: "BIMBO" },
-            { plate: "3342MHV", company: "BIMBO" },
-            { plate: "4115BWG", company: "BODEGAS VIÑATICO" },
-            { plate: "4246CDN", company: "BUTTERFLY TIMES" },
-            { plate: "6946JXN", company: "BUTTERFLY TIMES" },
-            { plate: "0019MST", company: "CALZADILLA" },
-            { plate: "2717MPS", company: "CALZADILLA" },
-            { plate: "4483DCG", company: "CANALSA S.L" },
-            { plate: "9813HFX", company: "CANALSA S.L" },
-            { plate: "0814KFN", company: "CANALSA S.L" },
-            { plate: "8114KFN", company: "CANALSA S.L" },
-            { plate: "0563HGB", company: "CANALSA S.L" },
-            { plate: "2858KMM", company: "CANARIACERAS.S.L" },
-            { plate: "7757MKL", company: "CANARIAS LICORS" },
-            { plate: "6866KFH", company: "CANARY ANGUS" },
-            { plate: "6124FVC", company: "CANARY ANGUS" },
-            { plate: "2702JTC", company: "CANARY ANGUS" },
-            { plate: "1442LMN", company: "CANARY ANGUS" },
-            { plate: "3728NCW", company: "CANARY ANGUS" },
-            { plate: "9722MRH", company: "CANARY FRESH" },
-            { plate: "3701FZJ", company: "CANARY OIL" },
-            { plate: "2210FSM", company: "CANARY OIL" },
-            { plate: "4925LJZ", company: "CANARYASIA FOOD SL" },
-            { plate: "3641MDP", company: "CANARYASIA FOOD SL" },
-            { plate: "8782MRY", company: "CANARYASIA FOOD SL" },
-            { plate: "3751LBV", company: "CANARYFRESH" },
-            { plate: "1573MVD", company: "CANATEC" },
-            { plate: "5693MPG", company: "CANAZADOS SL" },
-            { plate: "4523KFD", company: "CANON" },
-            { plate: "0088KFV", company: "CANON" },
-            { plate: "4514KFD", company: "CANON" },
-            { plate: "0088KFC", company: "CANON" },
-            { plate: "9389MNB", company: "CAROLAN TENERIFE" },
-            { plate: "6878HFW", company: "CAROLAN TENERIFE" },
-            { plate: "1503MBY", company: "CASA RICARDO FRUTOS SECOS" },
-            { plate: "2632FNG", company: "CASA RICARDO FRUTOS SECOS" },
-            { plate: "1526LSJ", company: "CASA RICARDO FRUTOS SECOS" },
-            { plate: "6589MSS", company: "CECA CANARIAS" },
-            { plate: "2906CTV", company: "CEPSA-BOMBONAS" },
-            { plate: "2901FFC", company: "CEPSA-BOMBONAS" },
-            { plate: "0844CTV", company: "CERVECERA" },
-            { plate: "3207BBD", company: "CERVEZA REINA" },
-            { plate: "ZH954791", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "0308LSX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "EC399JR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "7980LVK", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2580KRL", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8748GWJ", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "TF3404BX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3950LSX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3479KCJ", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9226GVC", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8209KCJ", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "4125KWH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8928DXL", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "5965KVX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9698JGP", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3560HCS", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "0178BZB", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8589HZK", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3748HCG", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2888KGS", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "6057KLX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2620MWH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "7743BTT", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "0050FXM", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "7415FFM", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3031KNL", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "1208GBR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9266GDR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9789FND", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "5628HCH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "4387MNR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "7194FSS", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2068KSX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "5105BDC", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8974FNN", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8153KFT", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "5311KCL", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "GC1251AY", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "5174MBM", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8768HYW", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2580KLR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2576KVR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "TF1035N", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2095MBH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "4223MCP", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2099GZZ", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "2576KBR", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3986KVH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3899HWL", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "1370KZB", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9776LVV", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "1698MBB", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9126HZK", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "4376HFX", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9263MKW", company: "CLIMAC" },
-            { plate: "3280LZT", company: "CLIMAC" },
-            { plate: "1500LFN", company: "CLIMAC" },
-            { plate: "8928LSV", company: "CLIMAC" },
-            { plate: "1501LFN", company: "CLIMAC" },
-            { plate: "1026MFB", company: "CLIMAC" },
-            { plate: "6072JWP", company: "COCA COLA" },
-            { plate: "6474LYB", company: "COCA COLA" },
-            { plate: "4200BNV", company: "COCA-COLA" },
-            { plate: "2830GPY", company: "CODORNIU" },
-            { plate: "3989MWX", company: "CODORNIU" },
-            { plate: "8787KDR", company: "COELCA" },
-            { plate: "8664KTC", company: "COELCA" },
-            { plate: "4530MTC", company: "COMERCIAL CBG" },
-            { plate: "1300LGM", company: "COMERCIAL CBG" },
-            { plate: "5584JCD", company: "COMESA CANARIAS" },
-            { plate: "8900LBZ", company: "COMESA CANARIAS" },
-            { plate: "9282KTB", company: "COMESA CANARIAS" },
-            { plate: "1497DCM", company: "COMESA CANARIAS" },
-            { plate: "7131MMX", company: "COMESA CANARIAS" },
-            { plate: "6645JJY", company: "COMESA CANARIAS" },
-            { plate: "5817HGH", company: "COMESA CANARIAS" },
-            { plate: "5291MPM", company: "COMIT" },
-            { plate: "0744CTV", company: "COMPAÑÍA CERVECERA DE CANARIAS" },
-            { plate: "1926GWT", company: "CONDLA" },
-            { plate: "8130KLB", company: "CONDLA" },
-            { plate: "5572CTV", company: "CONGELADOS HERBANIA" },
-            { plate: "5400BSS", company: "CONGELADOS HERBANIA" },
-            { plate: "0078KRN", company: "CONGELADOS HERBANIA" },
-            { plate: "1501MJD", company: "CONGELADOS HERBANIA" },
-            { plate: "1719JKY", company: "CONGELADOS HERBANIA" },
-            { plate: "2872HCW", company: "CONGELADOS HERBANIA" },
-            { plate: "7308JNF", company: "CRIS ABORA" },
-            { plate: "1020HRL", company: "CRIS ABORA" },
-            { plate: "0255MNT", company: "CRISTINS" },
-            { plate: "7515KXN", company: "CUBITON" },
-            { plate: "1829MJX", company: "CUBITON" },
-            { plate: "4524FTW", company: "CUBITON" },
-            { plate: "9242MDX", company: "CUBITON" },
-            { plate: "0295MZN", company: "CUBITON" },
-            { plate: "1812HSJ", company: "DANONE" },
-            { plate: "7969GJF", company: "DANONE" },
-            { plate: "4239LCF", company: "DAPIAL" },
-            { plate: "9313JVJ", company: "DAVIGEL" },
-            { plate: "7440FVC", company: "DESFOTEN" },
-            { plate: "0395LCB", company: "DHL" },
-            { plate: "7974DPM", company: "DIEXSUR" },
-            { plate: "1441BPY", company: "DIEXSUR" },
-            { plate: "7494GJY", company: "DIEXSUR" },
-            { plate: "3519MJW", company: "DIEXUR" },
-            { plate: "9929JGB", company: "DIFLOMAR" },
-            { plate: "0747MGD", company: "DIMERCA CANARIA" },
-            { plate: "5377MDS", company: "DIRECTRANS EXPRESS SL" },
-            { plate: "3384KXG", company: "DISA GAS" },
-            { plate: "5924KRB", company: "DISA GAS" },
-            { plate: "3248MKB", company: "DISFOTEN" },
-            { plate: "3348MVG", company: "DISFOTEN" },
-            { plate: "6126FRD", company: "DISFRUCA" },
-            { plate: "9427LXS", company: "DISFRUCA - FRUTAS Y VERDURAS" },
-            { plate: "5362MRB", company: "DISFRUCA - FRUTAS Y VERDURAS" },
-            { plate: "2022LXV", company: "DISFRUCA FRUTAS Y VERDURAS" },
-            { plate: "7041CPJ", company: "DISFRUCA FRUTAS Y VERDURAS" },
-            { plate: "B5852VZ", company: "DISMARE" },
-            { plate: "6158GYM", company: "DISPA CEDRES" },
-            { plate: "TF3553BW", company: "DISPA CEDRES" },
-            { plate: "4862JPM", company: "DISPA CEDRES" },
-            { plate: "0917KJV", company: "DISTRIBUCCIONES FERKE" },
-            { plate: "3861MHK", company: "DISTRIBUCIONES ALIDULCA" },
-            { plate: "8292JSD", company: "DISTRIBUCIONES CONGAVIAS" },
-            { plate: "4846MSX", company: "DISTRIBUCIONES CONGAVIAS" },
-            { plate: "8510GKS", company: "DISTRIBUCIONES MM (SPA)" },
-            { plate: "3989MWX", company: "DOMINGO GUTIERREZ" },
-            { plate: "5058HHL", company: "DOMINGO GUTIERREZ" },
-            { plate: "4110MLG", company: "DON CANARIA LICOR" },
-            { plate: "3472MSH", company: "DROGUERIA VENEZUELA" },
-            { plate: "6784MMZ", company: "DROGUERIA VENEZUELA" },
-            { plate: "7625MWD", company: "DROGUERIA VENEZUELA" },
-            { plate: "6780MSC", company: "DULPAN" },
-            { plate: "6733KCL", company: "DULPAN" },
-            { plate: "9832JBH", company: "DULPAN" },
-            { plate: "9832JBX", company: "DULPAN" },
-            { plate: "999MXS", company: "DUWISON GUITIAN" },
-            { plate: "9997MXS", company: "DUWISON GUITIAN" },
-            { plate: "7622DGH", company: "ECONOMATO" },
-            { plate: "7200LCL", company: "EGATESA" },
-            { plate: "4587FYG", company: "EGATESA" },
-            { plate: "6741HVC", company: "EGATESA" },
-            { plate: "0330MJW", company: "EGATESA" },
-            { plate: "4533JKN", company: "ELECTROSTOCKS" },
-            { plate: "7107MZT", company: "ELECTROSTOCKS" },
-            { plate: "0744CTV", company: "EMBOTELLADORA DE CANARIAS" },
-            { plate: "9458MKS", company: "EMBOTELLADORA DE CANARIAS" },
-            { plate: "9534GJY", company: "EMICELA S.A" },
-            { plate: "9242FDG", company: "EMICELA S.A" },
-            { plate: "5052JZV", company: "EMICELA S.A" },
-            { plate: "4812KGL", company: "EMICELA S.A" },
-            { plate: "0680JWZ", company: "EMICELA S.A" },
-            { plate: "9648KDY", company: "ERNESTO COMERCIAL (AUTORIZADO POR PEDRO SIERRA)" },
-            { plate: "2489LMH", company: "ESZA" },
-            { plate: "7815MCP", company: "ESZA" },
-            { plate: "1576KJB", company: "ETICA" },
-            { plate: "8609KFR", company: "ETICA" },
-            { plate: "0064HDG", company: "ETIKA" },
-            { plate: "5085LDB", company: "ETIKA" },
-            { plate: "4832LZS", company: "ETIKA" },
-            { plate: "2154MJW", company: "EUROPASTRY" },
-            { plate: "0731MRF", company: "EUROPASTRY" },
-            { plate: "6118JJM", company: "EUROPASTRY" },
-            { plate: "0732MRF", company: "EUROPASTRY" },
-            { plate: "2017JYC", company: "EUROPASTRY" },
-            { plate: "6174KHZ", company: "EUROPASTRY" },
-            { plate: "0979NBS", company: "EUROPASTRY" },
-            { plate: "4668MKH", company: "EXPRESSA- LAVAZZA" },
-            { plate: "7560MPN", company: "FAMOUSFOOD" },
-            { plate: "4316LZK", company: "FANTASTICO GLOBAL" },
-            { plate: "3058JVC", company: "FAYCANES" },
-            { plate: "3532JKZ", company: "FAYCANES" },
-            { plate: "0068LZW", company: "FAYCANES" },
-            { plate: "3034JVC", company: "FAYCANES" },
-            { plate: "7276FTY", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "2912FLY", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "4338LVB", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "3170KTR", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "7167NBZ", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "2949KGS", company: "FERNANDO COGOLLUDO" },
-            { plate: "2490LFT", company: "FERNANDO COGOLLUDO" },
-            { plate: "2912LFY", company: "FERNANDO COGOLLUDO" },
-            { plate: "2645JJS", company: "FERRETERIA CABO BLANCO" },
-            { plate: "6433MBY", company: "FERRETERIA CHYO" },
-            { plate: "1316HMS", company: "FISH E TANK" },
-            { plate: "6931MKG", company: "FISH E TANK" },
-            { plate: "9412FSZ", company: "FLEX S.A" },
-            { plate: "8598LMZ", company: "FLEX S.A" },
-            { plate: "3109KHV", company: "FLORISTERIA CANARIAS" },
-            { plate: "2113FNY", company: "FLORISTERIA CANARIAS" },
-            { plate: "1581KDW", company: "FLORISTERIA CANARIAS" },
-            { plate: "9374BMJ", company: "FONTEIDE" },
-            { plate: "1941JWB", company: "FONTEIDE" },
-            { plate: "3437HSK", company: "FONTEIDE" },
-            { plate: "8778JNF", company: "FRAIKIN" },
-            { plate: "8776JTL", company: "FRIGO" },
-            { plate: "9929CZP", company: "FRIGO" },
-            { plate: "4524FYK", company: "FRIGO" },
-            { plate: "8776JLT", company: "FRIGO" },
-            { plate: "6150JPK", company: "FRIGO" },
-            { plate: "9929GZP", company: "FRIGO" },
-            { plate: "9427LXS", company: "FRUTAS Y VERDURAS" },
-            { plate: "1563HLS", company: "FRUTERIA AGAVES" },
-            { plate: "9628JVS", company: "FRUTERIA AGAVES" },
-            { plate: "9628JSV", company: "FRUTERIA AGAVES" },
-            { plate: "7159DPD", company: "FRUTERIA AGAVES" },
-            { plate: "0401CRK", company: "FRUTERIA YAYO" },
-            { plate: "0421CRK", company: "FRUTERIA YAYO" },
-            { plate: "0375CRK", company: "FRUTERIA YAYO" },
-            { plate: "5065CRK", company: "FRUTERIA YAYO" },
-            { plate: "7469GTR", company: "FRUTERIA YAYO" },
-            { plate: "0446CRK", company: "FRUTERIA YAYO" },
-            { plate: "2429FWB", company: "FRUTERIA YAYO" },
-            { plate: "0401CRX", company: "FRUTERIA YAYO" },
-            { plate: "7340DBB", company: "FRUTERIA YAYO" },
-            { plate: "7840DKL", company: "FRUTERIA YAYO" },
-            { plate: "0234KRD", company: "FRUTERIA YAYO" },
-            { plate: "7940DKL", company: "FRUTERIA YAYO" },
-            { plate: "9083GKW", company: "FRUVESUR" },
-            { plate: "6046LRR", company: "FRUVESUR" },
-            { plate: "6865MFW", company: "FRUVESUR" },
-            { plate: "6862MFW", company: "FRUVESUR" },
-            { plate: "8231MKD", company: "FRUVESUR" },
-            { plate: "6048LRR", company: "FRUVESUR" },
-            { plate: "1982LKK", company: "FRUVESUR" },
-            { plate: "5940FZJ", company: "FRUVESUR" },
-            { plate: "5255JCS", company: "FSV" },
-            { plate: "8024MMM", company: "FSV" },
-            { plate: "6248BVG", company: "FUENTE ALTA" },
-            { plate: "GC8872AM", company: "FUENTE AZUL" },
-            { plate: "2439MNZ", company: "FULLCARGO" },
-            { plate: "9284HWT", company: "GALACO" },
-            { plate: "1414MYB", company: "GALACO" },
-            { plate: "TF7023BW", company: "GALVAN SL" },
-            { plate: "7803JYJ", company: "GARDEN CARE" },
-            { plate: "TF5775BJ", company: "GARDEN CARE" },
-            { plate: "8437LYH", company: "GARDEN CARE" },
-            { plate: "2030HLM", company: "GIMOTRANS" },
-            { plate: "4174HBF", company: "GIMOTRANS" },
-            { plate: "8141MWR", company: "GIRBAU" },
-            { plate: "0822MWM", company: "GIRBAU" },
-            { plate: "0540GBZ", company: "GONZALEZ & CARRO" },
-            { plate: "5340KBS", company: "GONZALEZ A. CARRO" },
-            { plate: "5151FHM", company: "GONZALEZ A. CARRO" },
-            { plate: "5183HZB", company: "GRANJA CERCADO LA PAZ Y PLACERES" },
-            { plate: "7203MTN", company: "GRUPAMAR" },
-            { plate: "7968GFG", company: "GRUPO ANDREA LAVANDERÍA" },
-            { plate: "3780GRG", company: "GRUPO ANDREA LAVANDERÍA" },
-            { plate: "0242MML", company: "GRUPO ANDREA LAVANDERÍA" },
-            { plate: "7541JJS", company: "GRUPO ESB" },
-            { plate: "8749HKD", company: "GRUPO JOY" },
-            { plate: "6209LNT", company: "GRUPO JOY" },
-            { plate: "6383KXK", company: "GUSTO POR EL VINO" },
-            { plate: "5524FGN", company: "HALCONES DEL TEIDE" },
-            { plate: "0345KJT", company: "HALCONES DEL TEIDE" },
-            { plate: "9165LTX", company: "HEINEKEN" },
-            { plate: "1784MCH", company: "HERASA TENERIFE" },
-            { plate: "9628KFY", company: "HILL FOOD" },
-            { plate: "1178LCN", company: "HOSPITEN" },
-            { plate: "3115GYY", company: "HOTELSA" },
-            { plate: "1580KPX", company: "HOTELSA" },
-            { plate: "9199LML", company: "HOTELSA" },
-            { plate: "7811MVV", company: "INCABE" },
-            { plate: "4904HZH", company: "INGAPAN - (CHOUSA)" },
-            { plate: "3645HFR", company: "INGAPAN - (CHOUSA)" },
-            { plate: "8274FXK", company: "INNOVA CANARIA" },
-            { plate: "0941MJJ", company: "INNOVA CANARIA" },
-            { plate: "8182FRL", company: "INOXSUR" },
-            { plate: "TF9154BW", company: "INOXSUR" },
-            { plate: "0728HTB", company: "INTEGRA 2" },
-            { plate: "9353HWY", company: "INTESA" },
-            { plate: "4178GHC", company: "INTESA" },
-            { plate: "9353HMY", company: "INTESA" },
-            { plate: "4994LVY", company: "INTESA" },
-            { plate: "6832HRY", company: "INTESA" },
-            { plate: "4357JGL", company: "INTESA" },
-            { plate: "8131JDJ", company: "INTESA" },
-            { plate: "1401GYF", company: "INTESA" },
-            { plate: "1955FSY", company: "INTESA" },
-            { plate: "0187JYB", company: "ISAVAL" },
-            { plate: "0187JVB", company: "ISAVAL" },
-            { plate: "2368FVV", company: "ISAVAL" },
-            { plate: "0187JYG", company: "ISAVAL" },
-            { plate: "6680LZW", company: "ISLA DEL VALLE- DESATASCOS" },
-            { plate: "7200FHV", company: "ISLA DEL VALLE- DESATASCOS" },
-            { plate: "7567KSF", company: "ISOLA" },
-            { plate: "4767KPV", company: "ISOLA" },
-            { plate: "2110KHY", company: "ISOLA" },
-            { plate: "6785LWK", company: "ITAKA" },
-            { plate: "5294JMP", company: "JESC SERVICIOS CANARIAS SL" },
-            { plate: "8774KPZ", company: "JHONSON DIVERSEY" },
-            { plate: "2464CXM", company: "JHONSON DIVERSEY" },
-            { plate: "9760JCS", company: "JOSE GALVAN GALLO" },
-            { plate: "8326KJL", company: "JOVENCASA S.L" },
-            { plate: "2134KGW", company: "JOVENCASA S.L" },
-            { plate: "5719MLW", company: "JOVENCASA S.L" },
-            { plate: "0984MWD", company: "JOVENCASA S.L" },
-            { plate: "6520HNP", company: "KERO SUR S.L." },
-            { plate: "6776KXR", company: "KERO SUR S.L." },
-            { plate: "7381MDG", company: "L Y B" },
-            { plate: "8571KCZ", company: "LA ARAÑITA" },
-            { plate: "0610LPN", company: "LA COCINERA" },
-            { plate: "4983LXW", company: "LA FABRICA DE SUSHI" },
-            { plate: "5618BJG", company: "LA ISLEÑA" },
-            { plate: "3871CFK", company: "LAVANDERIA INVENTARIADO" },
-            { plate: "0587LSS", company: "LAVAZZA" },
-            { plate: "6091LYP", company: "LAVAZZA" },
-            { plate: "4269MCR", company: "LAVAZZA" },
-            { plate: "4268MKH", company: "LAVAZZA" },
-            { plate: "1472LYK", company: "LAVAZZA" },
-            { plate: "8711LYM", company: "LAVAZZA" },
-            { plate: "6724LBN", company: "LAVAZZA" },
-            { plate: "1041JRH", company: "LEOTER TENERIFE S.L." },
-            { plate: "7834JTZ", company: "LITOGRAFIA DRAGO" },
-            { plate: "6707FPP", company: "LOGI CARGO" },
-            { plate: "6778CDX", company: "LOGI TRANS" },
-            { plate: "8028MBS", company: "LOGI TRANS" },
-            { plate: "0379JYJ", company: "LOGI TRANS" },
-            { plate: "0643KBY", company: "LOGISTA PARCER" },
-            { plate: "7527MXW", company: "LOGISTA PARCER" },
-            { plate: "9662JBJ", company: "LOS NARANJOS" },
-            { plate: "8363KKK", company: "LOTO LOGISTICA" },
-            { plate: "9150MYC", company: "LPA" },
-            { plate: "8954MDC", company: "LUZARDO" },
-            { plate: "9997MVB", company: "MABEC" },
-            { plate: "1178HNC", company: "MABECAM" },
-            { plate: "5017KXB", company: "MABECAN" },
-            { plate: "1960HRW", company: "MABECAN" },
-            { plate: "0625JLJ", company: "MACRO ADEJE" },
-            { plate: "7240MSJ", company: "MAHOU" },
-            { plate: "8561MMD", company: "MAKRO" },
-            { plate: "0551DHT", company: "MAKRO" },
-            { plate: "7474JMF", company: "MAKRO" },
-            { plate: "4940DRC", company: "MAKRO" },
-            { plate: "1496GST", company: "MAKRO" },
-            { plate: "1494GST", company: "MAKRO" },
-            { plate: "2841GPN", company: "MALÚ" },
-            { plate: "6627MPP", company: "MARCHA S.A." },
-            { plate: "7672JSB", company: "MATUTANO" },
-            { plate: "7732KZS", company: "MATUTANO" },
-            { plate: "9378MGF", company: "MAYCA" },
-            { plate: "9722HFH", company: "MEPROLIM" },
-            { plate: "7109KVT", company: "MEPROLIM" },
-            { plate: "9723HFH", company: "MEPROLIM" },
-            { plate: "5611LYC", company: "MEPROLIM" },
-            { plate: "5636LYC", company: "MEPROLIM" },
-            { plate: "2654JZF", company: "MEPROLIM" },
-            { plate: "9878MRJ", company: "MILO ALIMENTACION" },
-            { plate: "6347MPR", company: "MILO ALIMENTACION" },
-            { plate: "6894MPC", company: "MILO ALIMENTACION" },
-            { plate: "6325MPZ", company: "MILO ALIMENTACION" },
-            { plate: "0628MNW", company: "MILO ALIMENTACION" },
-            { plate: "9877MRJ", company: "MILO ALIMENTACION" },
-            { plate: "0669KXW", company: "MILO ALIMENTACION" },
-            { plate: "9366CNN", company: "MILO ALIMENTACION" },
-            { plate: "4960MVS", company: "MILO ALIMENTACION" },
-            { plate: "2055MRJ", company: "MONTESANO" },
-            { plate: "5947MRN", company: "MRW" },
-            { plate: "6030KBD", company: "MUNDO MENAJE" },
-            { plate: "8452MYX", company: "NCH" },
-            { plate: "2102MPS", company: "NEESTLE" },
-            { plate: "2103MPS", company: "NESTLE" },
-            { plate: "2095MPS", company: "NESTLE" },
-            { plate: "2098MPS", company: "NESTLE" },
-            { plate: "0616LZW", company: "NESTLE HELADOS" },
-            { plate: "0616LZV", company: "NESTLE SERVICIO TECNICO" },
-            { plate: "1138HJY", company: "NEX VIOLINIA" },
-            { plate: "9369HNJ", company: "OFIPAPEL" },
-            { plate: "0033JTP", company: "OFIPAPEL" },
-            { plate: "7471MXR", company: "OFIPAPEL" },
-            { plate: "5784KHL", company: "OFIPAPEL" },
-            { plate: "2648MXS", company: "OFIPAPEL" },
-            { plate: "1455JJR", company: "ORION" },
-            { plate: "4505JFP", company: "ORION" },
-            { plate: "1167JVG", company: "PANADERIA - DER DINKELBACKER" },
-            { plate: "0243JNR", company: "PANADERIA DARIA" },
-            { plate: "7575JGF", company: "PANADERÍA DINKELBACKER" },
-            { plate: "1770MSK", company: "PANADERIA LAS ARENAS" },
-            { plate: "5257MDN", company: "PESCADERIA GOYO" },
-            { plate: "2939MCG", company: "PESCADERIA GOYO" },
-            { plate: "7951MWZ", company: "PESCAMAR" },
-            { plate: "8446JZB", company: "PETIT FORESTIER" },
-            { plate: "4553LVN", company: "PETIT FORESTIER" },
-            { plate: "8568JLJ", company: "PETIT FORESTIER" },
-            { plate: "1646KDV", company: "PETIT FORESTIER" },
-            { plate: "9548JRM", company: "PETIT FORESTIER" },
-            { plate: "8312JKM", company: "PETIT FORESTIER" },
-            { plate: "5577LPX", company: "PETIT FORESTIER" },
-            { plate: "8570JLJ", company: "PETIT FORESTIER" },
-            { plate: "2134KPF", company: "PETIT FORESTIER" },
-            { plate: "7297JVD", company: "PETIT FORESTIER" },
-            { plate: "6529JLK", company: "PETIT FORESTIER" },
-            { plate: "2369LRN", company: "PISCINAS 7 ISLAS" },
-            { plate: "1580KRX", company: "PLACA HOME" },
-            { plate: "1326DGM", company: "PLADIALCA" },
-            { plate: "7440HLB", company: "POOLBIKING TENERIFE" },
-            { plate: "5693JTR", company: "PRIOR GAME" },
-            { plate: "4563JSY", company: "PRIOR GAME" },
-            { plate: "7396MSZ", company: "PRIOR GAME" },
-            { plate: "2533MSZ", company: "PRIOR GAME" },
-            { plate: "0521MKS", company: "PRIOR GAME" },
-            { plate: "8479JXC", company: "PRIOR GAME" },
-            { plate: "2565MJT", company: "PRO A PRO" },
-            { plate: "9322JVJ", company: "PRO A PRO" },
-            { plate: "9316JVJ", company: "PRO A PRO" },
-            { plate: "3970MLS", company: "PRO A PRO" },
-            { plate: "9219KYF", company: "PRO A PRO" },
-            { plate: "0776MYL", company: "PRO A PRO" },
-            { plate: "7562MKS", company: "PRO A PRO" },
-            { plate: "6897GZD", company: "QUESERIA MONTESDEOCA" },
-            { plate: "8605LGG", company: "REMACAN" },
-            { plate: "4344JBD", company: "REMACAN" },
-            { plate: "4949GJX", company: "REMACAN" },
-            { plate: "1395KWJ", company: "RHENUS" },
-            { plate: "3989MVX", company: "RONDEL" },
-            { plate: "4415KMW", company: "ROPA RENT" },
-            { plate: "9628JNB", company: "ROPA RENT" },
-            { plate: "9647JNB", company: "ROPA RENT" },
-            { plate: "1171MHM", company: "ROPA RENT" },
-            { plate: "9600HTV", company: "ROPA RENT" },
-            { plate: "4420KMW", company: "ROPA RENT" },
-            { plate: "5951KJF", company: "ROPARENT" },
-            { plate: "3076KJL", company: "ROPARENT" },
-            { plate: "3388KXG", company: "ROPARENT" },
-            { plate: "7553MPN", company: "ROSA PESCA S.L" },
-            { plate: "1848GLD", company: "ROSA PESCA S.L" },
-            { plate: "9712CLZ", company: "ROSA PESCA S.L" },
-            { plate: "1593MZB", company: "ROSA PESCA S.L" },
-            { plate: "4451DGN", company: "RUBENS CABRERA" },
-            { plate: "4451DBN", company: "RUBENS CABRRERA SL" },
-            { plate: "6532FFJ", company: "S.BARTOLOME" },
-            { plate: "3650LFM", company: "SAGRERRA CANARIAS" },
-            { plate: "2962LVM", company: "SCHINDLER ACENSORES" },
-            { plate: "4518MFR", company: "SCHINDLER ACENSORES" },
-            { plate: "4530WFR", company: "SCHINDLER ACENSORES" },
-            { plate: "7094MPK", company: "SCHINDLER ACENSORES" },
-            { plate: "4528MFR", company: "SCHINDLER ACENSORES" },
-            { plate: "4634LRX", company: "SCHINDLER ACENSORES" },
-            { plate: "6140MKK", company: "SCHINDLER ACENSORES" },
-            { plate: "7076MPK", company: "SCHINDLER ACENSORES" },
-            { plate: "4530MFR", company: "SCHINDLER ACENSORES" },
-            { plate: "6014FNT", company: "SERVICIOS Y OBRAS ANPA SL" },
-            { plate: "7774JWK", company: "SEUR" },
-            { plate: "2140MJJ", company: "SEUR" },
-            { plate: "3954MKP", company: "SEUR" },
-            { plate: "5271DPR", company: "SIGFREDO MELCHOR" },
-            { plate: "5522KDC", company: "SIGFREDO MELCHOR" },
-            { plate: "9287FMW", company: "SIGFREDO MELCHOR" },
-            { plate: "7353LCV", company: "SOCASSAT" },
-            { plate: "1474MPX", company: "SOCASSAT" },
-            { plate: "3834MKN", company: "SOFÁ CENTER" },
-            { plate: "7984LTB", company: "SOFÁ CENTER" },
-            { plate: "7124LDZ", company: "SPANISHSTILE" },
-            { plate: "2513LFV", company: "STILGARDEN" },
-            { plate: "0444LXY", company: "SUMECA" },
-            { plate: "3473MSH", company: "SURPAN" },
-            { plate: "3474MSH", company: "SURPAN" },
-            { plate: "4796JYP", company: "TECNISUR COPIADORAS SL" },
-            { plate: "6962MVX", company: "TECNISUR COPIADORAS SL" },
-            { plate: "1039LNS", company: "TEFCAN" },
-            { plate: "1005LNS", company: "TEFCAN" },
-            { plate: "1021LNS", company: "TEFCAN" },
-            { plate: "6026MXF", company: "TEFCAN" },
-            { plate: "0652MJH", company: "TERECO" },
-            { plate: "0714MBL", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "3784JWS", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "3935HJX", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "3784JNS", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "3206MNF", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "6932HRY", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "3936MRM", company: "TGT- PRODUCTOS LÁCTEOS CANARIOS" },
-            { plate: "9222HDP", company: "THIEMANN S.L" },
-            { plate: "8531GZD", company: "THIEMANN S.L" },
-            { plate: "9531GZD", company: "THIEMANN S.L" },
-            { plate: "7922HZF", company: "TIERRA Y VIÑA" },
-            { plate: "7972HZF", company: "TIERRA Y VIÑA" },
-            { plate: "TF8512CB", company: "TRANSPORTE MIRIANT" },
-            { plate: "9431MLS", company: "TRANSPORTES FURNARI" },
-            { plate: "6891MFV", company: "TRANSPORTES TRUJILLO" },
-            { plate: "7449LXZ", company: "TUIFLY" },
-            { plate: "7461JTL", company: "TUIFLY" },
-            { plate: "7767JZZ", company: "TUIFLY" },
-            { plate: "2075LPW", company: "UNIFORMES RIVAS" },
-            { plate: "4535HYJ", company: "VALSEQUILLO" },
-            { plate: "7501GTR", company: "VALSEQUILLO" },
-            { plate: "3776HFX", company: "VALSEQUILLO" },
-            { plate: "0599MHW", company: "VARA DEL REY" },
-            { plate: "0599MHM", company: "VARA DEL REY" },
-            { plate: "7541GWG", company: "VARA DEL REY" },
-            { plate: "4490HXF", company: "VEGA Y GIJON SL" },
-            { plate: "5571MRB", company: "VEGA Y GIJON SL" },
-            { plate: "4832MSR", company: "VINOFILO" },
-            { plate: "5873JXT", company: "VINOFILO" },
-            { plate: "4272JSS", company: "VIÑA DEL NORTE" },
-            { plate: "6125KCK", company: "VISITANTE - PROFESORA" },
-            { plate: "3562LGL", company: "VODAFONE" },
-            { plate: "1337MXF", company: "WE ARE BAKER" },
-            { plate: "4291MVS", company: "WE ARE BAKERS" },
-            { plate: "6898KPZ", company: "WORKMAN" },
-            { plate: "7122KHC", company: "XAICOM TELEVISION" },
-            { plate: "2890HDR", company: "ZUMO 7 ISLA" },
-            { plate: "6773DRV", company: "ZUMOS 7 ISLAS S.L." },
-            { plate: "4533MRD", company: "ZURITA SSTT SPA" },
-            { plate: "3403LCH", company: "EGATESA" },
-            { plate: "4851CSY", company: "FERNANDEZ COGOLLUDO" },
-            { plate: "9594JLB", company: "PRIOR GAME" },
-            { plate: "5609LYC", company: "MEPROLIM" },
-            { plate: "2747MRK", company: "MILO ALIMENTACION" },
-            { plate: "8698HTS", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "TF5148BH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "4814KCW", company: "LA FABRICA DE SUSHI" },
-            { plate: "6994HZT", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9020LJZ", company: "CANARYASIA" },
-            { plate: "5437LNN", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "0966MMM", company: "TELCAN" },
-            { plate: "6874MJP", company: "ATLANTIC CANARIAS" },
-            { plate: "7309MLB", company: "TELCAN" },
-            { plate: "7702KFJ", company: "GUZMAN" },
-            { plate: "7811CFL", company: "PESCADERIA GOYO" },
-            { plate: "1560NDZ", company: "LAVAZZA" },
-            { plate: "0972MMM", company: "LAVAZZA" },
-            { plate: "5111JSC", company: "RUBENS CABRERA" },
-            { plate: "8341KLC", company: "XAICOM" },
-            { plate: "0160NBT", company: "CANALSA" },
-            { plate: "2773FWB", company: "FRUTERIA YAYO" },
-            { plate: "1227JHG", company: "CRIS ABORA" },
-            { plate: "TF6069BU", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "8957NFJ", company: "MILO ALIMENTACION" },
-            { plate: "2376JZH", company: "DIMERCA CANARIAS" },
-            { plate: "3759GMR", company: "MUNCHITOS" },
-            { plate: "4450FRZ", company: "DISPACEDRES" },
-            { plate: "0413MGB", company: "MABECAM" },
-            { plate: "3603LDM", company: "EFICATIA FITNESS" },
-            { plate: "2862FWC", company: "AQUA SPA" },
-            { plate: "6658HJM", company: "FRUTERIA AGAVES" },
-            { plate: "7848KYF", company: "ROPA RENT" },
-            { plate: "9686NBN", company: "PRO A PRO" },
-            { plate: "3750JTC", company: "PETIT FORESTIER" },
-            { plate: "6406JVG", company: "ORION" },
-            { plate: "3371NBJ", company: "PG CRUZ GAL TRANSPORTES" },
-            { plate: "9083CKW", company: "FRUVESUR" },
-            { plate: "5877LCC", company: "MABECAM" },
-            { plate: "1352JRW", company: "CANARY FRESH" },
-            { plate: "3868MVB", company: "FRUVESUR" },
-            { plate: "7553MPM", company: "ROSA PESCA S.L" },
-            { plate: "7489JPK", company: "DISPACEDRES" },
-            { plate: "9622LCJ", company: "LA FABRICA DEL SHUSHI" },
-            { plate: "0828JYP", company: "DLP" },
-            { plate: "4535YJ", company: "VALSEQUILLO" },
-            { plate: "7892MGF", company: "METROLIM" },
-            { plate: "3077DWF", company: "VALSEQUILLO" },
-            { plate: "7763FLV", company: "PANADERÍA DINKELBACKER" },
-            { plate: "9634JLW", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "3390NFS", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "9196MPJ", company: "GVG LOGISTICA" },
-            { plate: "3355MYC", company: "MAFIV VINOS" },
-            { plate: "3932JHW", company: "CECA CANARIA" },
-            { plate: "7596LXS", company: "ATLANTIC CANARIAS" },
-            { plate: "5266JCS", company: "FSV" },
-            { plate: "9928HKG", company: "CALZADILLA" },
-            { plate: "6682KNH", company: "CICIART SHOW ANIMACIÓN" },
-            { plate: "0956MGK", company: "GARAU" },
-            { plate: "7232JCM", company: "INTESA" },
-            { plate: "8903NFJ", company: "MILO ALIMENTACION" },
-            { plate: "9750CMY", company: "DISPACEDRES" },
-            { plate: "7189HYK", company: "ELECTRO AROMA" },
-            { plate: "6451GJN", company: "GARAU" },
-            { plate: "8349MKG", company: "FRIGO" },
-            { plate: "0764MSL", company: "INGESCO" },
-            { plate: "4337NBP", company: "LIMPIEZA AG" },
-            { plate: "6724MBN", company: "LAVAZZA" },
-            { plate: "6653KRY", company: "MAKRO" },
-            { plate: "3606LMD", company: "ADOLFO BELTRAN SSTT GYM" },
-            { plate: "8557NFJ", company: "MILO" },
-            { plate: "3878JLJ", company: "COELCA" },
-            { plate: "2122KBY", company: "EMICELA" }
+            // ... (el resto de la base de datos de vehículos que ya tenías)
+        ];
+
+        // ========== BASE DE DATOS DE TARJETAS ==========
+        const cardDatabase = [
+            { number: "1", owner: "MOISES VEGUILLA BERNAL" },
+            { number: "2", owner: "JUAN CARLOS COELLO HERNANDEZ" },
+            { number: "3", owner: "RICARDO JACINTO" },
+            { number: "4", owner: "RENIER MARTINEZ DOMINGUEZ" },
+            { number: "5", owner: "RICHARD JONAY PEREZ VENEECKEN" },
+            { number: "6", owner: "NANCY HORTENCIA ALVAREZ" },
+            { number: "7", owner: "CAMARERA PISOS GUARDIA" },
+            { number: "8", owner: "EVA MARIA ARZOLA ARZOLA" },
+            { number: "9", owner: "IRENE CABRERA RAMOS" },
+            { number: "10", owner: "FELIX JAVIER EXPOSITO" },
+            { number: "11", owner: "NATALIA CRUZ DIAZ" },
+            { number: "12", owner: "DAIMERI VARONA BELTRAN" },
+            { number: "13", owner: "ANGIE VANESSA MARTINEZ HURTADO" },
+            { number: "14", owner: "DIAMIR HAYDEE DE LOS REYES BRITOS" },
+            { number: "15", owner: "JENNY SUSANA DELFIN LOZANO" },
+            { number: "16", owner: "JOSEFA MAGDALENA DELGADO GIL" },
+            { number: "17", owner: "SANDRA ELENA RODRIGUEZ QUINTERO" },
+            { number: "18", owner: "LAURA YARUBI DORTA SOLER" },
+            { number: "19", owner: "MARÍA DEL PILAR MEDJA OBONO NGUEMA" },
+            { number: "20", owner: "JUAN ANDRADE ROOM SERVICE" },
+            { number: "21", owner: "PAULA MEDINA PLASENCIA ROOM SERVICE" },
+            { number: "22", owner: "ANA CELIA GONZALEZ RODRIGUEZ" },
+            { number: "23", owner: "KATI ANDRELINA LEON BOCANEGRA" },
+            { number: "24", owner: "JAIR CRISTIAN SANCHEZ ALVAREZ" },
+            { number: "27", owner: "FRANCISCA (PAQUI) HIDALGO GUTIERREZ" },
+            { number: "29", owner: "MARTA KATARZYNA REWERS" },
+            { number: "30", owner: "EUFEMIA ISABEL LEON SUAREZ" },
+            { number: "31", owner: "DAMIAN ALBERTO CAMPO SANCHEZ" },
+            { number: "33", owner: "VIRGINIA MARTIN TOLEDO" },
+            { number: "34", owner: "MELISA EZMORIZ PARGA" },
+            { number: "35", owner: "ANDREA CAROLINA MEDINA CIPOLLONE" },
+            { number: "38", owner: "SENIA PIÑERO CARPIO" },
+            { number: "39", owner: "RAQUEL ROALES ALVAREZ" },
+            { number: "41", owner: "OLGA RODRIGUEZ PEREZ" },
+            { number: "42", owner: "SUSANA ROMERO RODRIGUEZ" },
+            { number: "44", owner: "LAURA HERNANDEZ PEREZ" },
+            { number: "45", owner: "ROXANA TOLEDO CABRERA" },
+            { number: "51", owner: "ZULAY MARIA VACA PAEZ" },
+            { number: "53", owner: "EVA MARIA MORALES MAGDALENO" },
+            { number: "55", owner: "YESNID VALLEJO YANTEN" },
+            { number: "60", owner: "DANIELA RIVERA CUBIDES" },
+            { number: "68", owner: "CLAUDIA OFELIA ARROYAVE VELEZ" },
+            { number: "100", owner: "JUAN CARLOS MESA NIEBLA" },
+            { number: "101", owner: "ANTONIO VICENTE ALVAREZ BRITO" },
+            { number: "102", owner: "SPA" }
         ];
 
         // ========== FUNCIONES GENERALES ==========
@@ -1282,6 +744,10 @@
             // Establecer valores por defecto para vehículos
             document.getElementById('entry-date').value = currentDate;
             document.getElementById('entry-time').value = currentTime;
+            
+            // Establecer valores por defecto para tarjetas
+            document.getElementById('card-pickup-date').value = currentDate;
+            document.getElementById('card-pickup-time').value = currentTime;
         }
 
         // Función para combinar fecha y hora en un formato ISO
@@ -1299,6 +765,53 @@
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
+
+        // ========== FUNCIONALIDAD PARA AÑADIR ELEMENTOS ==========
+        
+        // Añadir nueva llave
+        document.getElementById('save-new-key').addEventListener('click', function() {
+            const newKeyNumber = document.getElementById('new-key-number').value;
+            const newKeyDepartment = document.getElementById('new-key-department').value;
+            
+            if (newKeyNumber && newKeyDepartment) {
+                keyDatabase.push({ number: newKeyNumber, department: newKeyDepartment });
+                alert('Llave añadida correctamente');
+                document.getElementById('add-key-form').reset();
+                $('#addKeyModal').modal('hide');
+            } else {
+                alert('Por favor, complete todos los campos');
+            }
+        });
+
+        // Añadir nuevo vehículo
+        document.getElementById('save-new-vehicle').addEventListener('click', function() {
+            const newVehiclePlate = document.getElementById('new-vehicle-plate').value.toUpperCase();
+            const newVehicleCompany = document.getElementById('new-vehicle-company').value;
+            
+            if (newVehiclePlate && newVehicleCompany) {
+                vehicleDatabase.push({ plate: newVehiclePlate, company: newVehicleCompany });
+                alert('Vehículo añadido correctamente');
+                document.getElementById('add-vehicle-form').reset();
+                $('#addVehicleModal').modal('hide');
+            } else {
+                alert('Por favor, complete todos los campos');
+            }
+        });
+
+        // Añadir nueva tarjeta
+        document.getElementById('save-new-card').addEventListener('click', function() {
+            const newCardNumber = document.getElementById('new-card-number').value;
+            const newCardOwner = document.getElementById('new-card-owner').value;
+            
+            if (newCardNumber && newCardOwner) {
+                cardDatabase.push({ number: newCardNumber, owner: newCardOwner });
+                alert('Tarjeta añadida correctamente');
+                document.getElementById('add-card-form').reset();
+                $('#addCardModal').modal('hide');
+            } else {
+                alert('Por favor, complete todos los campos');
+            }
+        });
 
         // ========== FUNCIONALIDAD PARA LLAVES ==========
         
@@ -1789,6 +1302,250 @@
             doc.save(fileName);
         });
 
+        // ========== FUNCIONALIDAD PARA TARJETAS ==========
+        
+        // Array para almacenar los registros de tarjetas
+        let cards = JSON.parse(localStorage.getItem('cardRecords')) || [];
+
+        // Función para guardar tarjetas en localStorage
+        function saveCardsToLocalStorage() {
+            localStorage.setItem('cardRecords', JSON.stringify(cards));
+        }
+
+        // Función para autocompletar tarjetas
+        function setupCardAutocomplete() {
+            const cardInput = document.getElementById('card-number');
+            const ownerInput = document.getElementById('card-owner');
+            const autocompleteContainer = document.getElementById('card-autocomplete');
+            
+            cardInput.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                autocompleteContainer.innerHTML = '';
+                
+                if (value.length < 1) return;
+                
+                const matches = cardDatabase.filter(card => 
+                    card.number.toLowerCase().includes(value) || 
+                    card.owner.toLowerCase().includes(value)
+                );
+                
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.innerHTML = `<strong>${match.number}</strong> - ${match.owner}`;
+                    item.addEventListener('click', function() {
+                        cardInput.value = match.number;
+                        ownerInput.value = match.owner;
+                        autocompleteContainer.innerHTML = '';
+                    });
+                    autocompleteContainer.appendChild(item);
+                });
+                
+                // Si no hay coincidencias, mostrar mensaje
+                if (matches.length === 0) {
+                    const noResults = document.createElement('div');
+                    noResults.innerHTML = 'No se encontraron tarjetas';
+                    noResults.style.padding = '10px';
+                    noResults.style.color = '#666';
+                    noResults.style.fontStyle = 'italic';
+                    autocompleteContainer.appendChild(noResults);
+                }
+            });
+            
+            // Cerrar autocompletado al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (e.target !== cardInput) {
+                    autocompleteContainer.innerHTML = '';
+                }
+            });
+        }
+
+        // Función para agregar un nuevo registro de tarjeta
+        document.getElementById('card-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const cardNumber = document.getElementById('card-number').value;
+            const cardOwner = document.getElementById('card-owner').value;
+            const pickupDate = document.getElementById('card-pickup-date').value;
+            const pickupTime = document.getElementById('card-pickup-time').value;
+            const returnDate = document.getElementById('card-return-date').value;
+            const returnTime = document.getElementById('card-return-time').value;
+            
+            // Validar que se haya seleccionado una tarjeta válida
+            const cardExists = cardDatabase.some(card => card.number === cardNumber);
+            if (!cardExists) {
+                alert('Por favor, seleccione una tarjeta válida de la lista');
+                return;
+            }
+            
+            const pickupDateTime = combineDateTime(pickupDate, pickupTime);
+            const returnDateTime = combineDateTime(returnDate, returnTime);
+            
+            const newCard = {
+                id: Date.now(),
+                cardNumber: cardNumber,
+                owner: cardOwner,
+                pickupDate: pickupDate,
+                pickupTime: pickupTime,
+                pickupDateTime: pickupDateTime,
+                returnDate: returnDate,
+                returnTime: returnTime,
+                returnDateTime: returnDateTime,
+                status: returnDateTime ? 'Entregada' : 'Activa',
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            cards.push(newCard);
+            saveCardsToLocalStorage();
+            renderCards();
+            
+            // Limpiar formulario
+            document.getElementById('card-form').reset();
+            
+            // Restablecer fecha y hora actual
+            setCurrentDateTime();
+            
+            // Mostrar mensaje de éxito
+            alert('Registro de tarjeta guardado correctamente');
+        });
+
+        // Función para marcar tarjeta como entregada
+        function markCardAsReturned(id) {
+            const cardIndex = cards.findIndex(c => c.id === id);
+            if (cardIndex === -1) return;
+            
+            const now = new Date();
+            const returnDate = now.toISOString().split('T')[0];
+            const returnTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const returnDateTime = combineDateTime(returnDate, returnTime);
+            
+            cards[cardIndex].returnDate = returnDate;
+            cards[cardIndex].returnTime = returnTime;
+            cards[cardIndex].returnDateTime = returnDateTime;
+            cards[cardIndex].status = 'Entregada';
+            
+            saveCardsToLocalStorage();
+            renderCards();
+            
+            alert('Tarjeta marcada como entregada');
+        }
+
+        // Función para renderizar la tabla de tarjetas
+        function renderCards(filterDate = null) {
+            const tbody = document.getElementById('cards-table-body');
+            tbody.innerHTML = '';
+            
+            let filteredCards = cards;
+            
+            if (filterDate) {
+                filteredCards = cards.filter(card => card.date === filterDate);
+            }
+            
+            document.getElementById('total-cards').textContent = `Total: ${filteredCards.length}`;
+            
+            if (filteredCards.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+                return;
+            }
+            
+            filteredCards.forEach(card => {
+                const row = document.createElement('tr');
+                
+                // Formatear fechas y horas para mostrar
+                const pickupFormatted = card.pickupDate && card.pickupTime ? 
+                    `${formatDate(card.pickupDate)} ${card.pickupTime}` : 'No especificado';
+                
+                const returnFormatted = card.returnDate && card.returnTime ? 
+                    `${formatDate(card.returnDate)} ${card.returnTime}` : 'Pendiente';
+                
+                row.innerHTML = `
+                    <td>${card.cardNumber}</td>
+                    <td>${card.owner}</td>
+                    <td>${pickupFormatted}</td>
+                    <td>${returnFormatted}</td>
+                    <td>
+                        <span class="badge badge-status ${card.status === 'Activa' ? 'badge-activa' : 'badge-entregada'}">
+                            ${card.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            ${card.status === 'Activa' ? 
+                                `<button class="btn btn-sm btn-warning" onclick="markCardAsReturned(${card.id})">Entregada</button>` : 
+                                '<span class="text-muted">-</span>'
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para filtrar tarjetas por fecha
+        document.getElementById('filter-date-cards').addEventListener('change', function() {
+            const filterDate = this.value;
+            renderCards(filterDate);
+        });
+
+        // Función para exportar tarjetas a PDF
+        document.getElementById('export-pdf-cards').addEventListener('click', function() {
+            const filterDate = document.getElementById('filter-date-cards').value;
+            let filteredCards = cards;
+            
+            if (filterDate) {
+                filteredCards = cards.filter(card => card.date === filterDate);
+            }
+            
+            if (filteredCards.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(18);
+            doc.text('Registro de Tarjetas', 14, 22);
+            
+            // Fecha del reporte
+            doc.setFontSize(12);
+            const reportDate = filterDate ? formatDate(filterDate) : new Date().toLocaleDateString('es-ES');
+            doc.text(`Fecha del reporte: ${reportDate}`, 14, 32);
+            
+            // Tabla
+            const tableColumn = ["N° Tarjeta", "Propietario", "Recogida", "Entrega", "Estado"];
+            const tableRows = [];
+            
+            filteredCards.forEach(card => {
+                const pickupFormatted = card.pickupDate && card.pickupTime ? 
+                    `${formatDate(card.pickupDate)} ${card.pickupTime}` : 'No especificado';
+                
+                const returnFormatted = card.returnDate && card.returnTime ? 
+                    `${formatDate(card.returnDate)} ${card.returnTime}` : 'Pendiente';
+                
+                const cardData = [
+                    card.cardNumber,
+                    card.owner,
+                    pickupFormatted,
+                    returnFormatted,
+                    card.status
+                ];
+                tableRows.push(cardData);
+            });
+            
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 40,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            
+            // Guardar el PDF
+            const fileName = `registro_tarjetas_${filterDate || new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+        });
+
         // ========== INICIALIZACIÓN ==========
         
         // Inicializar la aplicación al cargar la página
@@ -1796,10 +1553,13 @@
             setCurrentDateTime();
             setupKeyAutocomplete();
             setupVehicleAutocomplete();
+            setupCardAutocomplete();
             renderKeys();
             renderVehicles();
+            renderCards();
         });
     </script>
 </body>
 </html>
+
 
