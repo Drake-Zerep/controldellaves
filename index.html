@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control de Llaves</title>
+    <title>Sistema de Control - Llaves y Vehículos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -13,6 +13,7 @@
             --secondary-color: #2c3e50;
             --success-color: #27ae60;
             --danger-color: #e74c3c;
+            --warning-color: #f39c12;
             --light-color: #ecf0f1;
         }
         
@@ -65,7 +66,7 @@
         }
         
         .btn-warning {
-            background-color: #f39c12;
+            background-color: var(--warning-color);
             border: none;
             color: white;
         }
@@ -88,6 +89,16 @@
         
         .badge-prestada {
             background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .badge-dentro {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .badge-fuera {
+            background-color: var(--success-color);
             color: white;
         }
         
@@ -167,8 +178,23 @@
             color: white;
         }
         
-        .key-input-container {
+        .key-input-container, .vehicle-input-container {
             position: relative;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .tab-content {
+            padding-top: 1.5rem;
         }
         
         @media (max-width: 768px) {
@@ -188,8 +214,8 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="logo">
-                    <span class="logo-icon">🔑</span>
-                    Sistema de Control de Llaves
+                    <span class="logo-icon">🔑 🚗</span>
+                    Sistema de Control
                 </div>
                 <div class="text-end">
                     <small>Fecha: <span id="current-date"></span></small>
@@ -199,86 +225,190 @@
     </header>
 
     <div class="container">
-        <!-- Formulario de registro -->
-        <div class="card">
-            <div class="card-header">
-                Registrar Préstamo de Llave
-            </div>
-            <div class="card-body">
-                <form id="key-form">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label for="key-number" class="form-label">Número de Llave</label>
-                            <div class="key-input-container">
-                                <input type="text" class="form-control" id="key-number" required autocomplete="off">
-                                <div id="key-autocomplete" class="autocomplete-items"></div>
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="keys-tab" data-bs-toggle="tab" data-bs-target="#keys" type="button" role="tab" aria-controls="keys" aria-selected="true">Control de Llaves</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="vehicles-tab" data-bs-toggle="tab" data-bs-target="#vehicles" type="button" role="tab" aria-controls="vehicles" aria-selected="false">Registro de Vehículos</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Pestaña de Llaves -->
+            <div class="tab-pane fade show active" id="keys" role="tabpanel" aria-labelledby="keys-tab">
+                <!-- Formulario de registro de llaves -->
+                <div class="card">
+                    <div class="card-header">
+                        Registrar Préstamo de Llave
+                    </div>
+                    <div class="card-body">
+                        <form id="key-form">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="key-number" class="form-label">Número de Llave</label>
+                                    <div class="key-input-container">
+                                        <input type="text" class="form-control" id="key-number" required autocomplete="off">
+                                        <div id="key-autocomplete" class="autocomplete-items"></div>
+                                    </div>
+                                    <small class="form-text text-muted">Comience a escribir el número o nombre de la llave</small>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="department" class="form-label">Departamento</label>
+                                    <input type="text" class="form-control" id="department" required readonly>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="pickup-date" class="form-label">Fecha de Recogida</label>
+                                    <div class="datetime-inputs">
+                                        <input type="date" class="form-control date-input" id="pickup-date" required>
+                                        <input type="time" class="form-control time-input" id="pickup-time" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="person-name" class="form-label">Nombre de la Persona</label>
+                                    <input type="text" class="form-control" id="person-name" required>
+                                </div>
                             </div>
-                            <small class="form-text text-muted">Comience a escribir el número o nombre de la llave</small>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="department" class="form-label">Departamento</label>
-                            <input type="text" class="form-control" id="department" required readonly>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="pickup-date" class="form-label">Fecha de Recogida</label>
-                            <div class="datetime-inputs">
-                                <input type="date" class="form-control date-input" id="pickup-date" required>
-                                <input type="time" class="form-control time-input" id="pickup-time" required>
+                            <div class="row">
+                                <div class="col-md-9 mb-3">
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="person-name" class="form-label">Nombre de la Persona</label>
-                            <input type="text" class="form-control" id="person-name" required>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Listado de llaves -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Listado de Préstamos de Llaves</span>
+                        <span class="badge bg-primary" id="total-keys">Total: 0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>N° Llave</th>
+                                        <th>Departamento</th>
+                                        <th>Persona</th>
+                                        <th>Recogida</th>
+                                        <th>Entrega</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keys-table-body">
+                                    <!-- Los datos se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-9 mb-3">
+                </div>
+
+                <!-- Filtros y exportación de llaves -->
+                <div class="filter-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-3">
+                            <label for="filter-date-keys" class="form-label">Filtrar por fecha:</label>
+                            <input type="date" class="form-control" id="filter-date-keys">
                         </div>
-                        <div class="col-md-3 mb-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                        <div class="col-md-6 mb-3 d-flex justify-content-end">
+                            <button id="export-pdf-keys" class="btn btn-success">Exportar a PDF</button>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Listado de llaves -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Listado de Préstamos de Llaves</span>
-                <span class="badge bg-primary" id="total-keys">Total: 0</span>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>N° Llave</th>
-                                <th>Departamento</th>
-                                <th>Persona</th>
-                                <th>Recogida</th>
-                                <th>Entrega</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="keys-table-body">
-                            <!-- Los datos se cargarán aquí dinámicamente -->
-                        </tbody>
-                    </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Filtros y exportación -->
-        <div class="filter-section">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-3">
-                    <label for="filter-date" class="form-label">Filtrar por fecha:</label>
-                    <input type="date" class="form-control" id="filter-date">
+            <!-- Pestaña de Vehículos -->
+            <div class="tab-pane fade" id="vehicles" role="tabpanel" aria-labelledby="vehicles-tab">
+                <!-- Formulario de registro de vehículos -->
+                <div class="card">
+                    <div class="card-header">
+                        Registro de Entrada/Salida de Vehículos
+                    </div>
+                    <div class="card-body">
+                        <form id="vehicle-form">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="vehicle-plate" class="form-label">Matrícula</label>
+                                    <div class="vehicle-input-container">
+                                        <input type="text" class="form-control" id="vehicle-plate" required autocomplete="off">
+                                        <div id="vehicle-autocomplete" class="autocomplete-items"></div>
+                                    </div>
+                                    <small class="form-text text-muted">Comience a escribir la matrícula</small>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="vehicle-company" class="form-label">Empresa</label>
+                                    <input type="text" class="form-control" id="vehicle-company" required readonly>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="entry-date" class="form-label">Fecha de Entrada</label>
+                                    <div class="datetime-inputs">
+                                        <input type="date" class="form-control date-input" id="entry-date" required>
+                                        <input type="time" class="form-control time-input" id="entry-time" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="exit-date" class="form-label">Fecha de Salida</label>
+                                    <div class="datetime-inputs">
+                                        <input type="date" class="form-control date-input" id="exit-date">
+                                        <input type="time" class="form-control time-input" id="exit-time">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-9 mb-3">
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3 d-flex justify-content-end">
-                    <button id="export-pdf" class="btn btn-success">Exportar a PDF</button>
+
+                <!-- Listado de vehículos -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Listado de Vehículos</span>
+                        <span class="badge bg-primary" id="total-vehicles">Total: 0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Matrícula</th>
+                                        <th>Empresa</th>
+                                        <th>Entrada</th>
+                                        <th>Salida</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vehicles-table-body">
+                                    <!-- Los datos se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros y exportación de vehículos -->
+                <div class="filter-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-3">
+                            <label for="filter-date-vehicles" class="form-label">Filtrar por fecha:</label>
+                            <input type="date" class="form-control" id="filter-date-vehicles">
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex justify-content-end">
+                            <button id="export-pdf-vehicles" class="btn btn-success">Exportar a PDF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -287,9 +417,12 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="mb-0">Sistema de Control de Llaves &copy; 2023</p>
+            <p class="mb-0">Sistema de Control - Llaves y Vehículos &copy; 2023</p>
         </div>
     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // Inicializar jsPDF
@@ -298,7 +431,7 @@
         // Mostrar fecha actual
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES');
 
-        // Base de datos de llaves predefinidas (actualizada con la lista proporcionada)
+        // ========== BASE DE DATOS DE LLAVES ==========
         const keyDatabase = [
             { number: "1", department: "Economato" },
             { number: "2", department: "Restaurante babbo american grill" },
@@ -435,6 +568,27 @@
             { number: "916", department: "Caja fuerte RECEPCION" }
         ];
 
+        // ========== BASE DE DATOS DE VEHÍCULOS ==========
+        const vehicleDatabase = [
+            { plate: "7726KBY", company: "Adeje Limpio" },
+            { plate: "1234ABC", company: "Mantenimiento SL" },
+            { plate: "5678DEF", company: "Suministros García" },
+            { plate: "9012GHI", company: "Limpiezas Express" },
+            { plate: "3456JKL", company: "Catering Deluxe" },
+            { plate: "7890MNO", company: "Seguridad Total" },
+            { plate: "2345PQR", company: "Jardinería Verde" },
+            { plate: "6789STU", company: "Fontanería Rápida" },
+            { plate: "0123VWX", company: "Electricidad Segura" },
+            { plate: "4567YZA", company: "Piscinas Cristal" },
+            { plate: "8901BCD", company: "Limpiezas Profesionales" },
+            { plate: "2345EFG", company: "Mantenimiento Integral" },
+            { plate: "6789HIJ", company: "Suministros Rápidos" },
+            { plate: "0123KLM", company: "Catering Premium" },
+            { plate: "4567NOP", company: "Seguridad Avanzada" }
+        ];
+
+        // ========== FUNCIONES GENERALES ==========
+        
         // Establecer fecha y hora actual por defecto
         function setCurrentDateTime() {
             const now = new Date();
@@ -450,23 +604,39 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const currentTime = `${hours}:${minutes}`;
             
-            // Establecer valores por defecto
+            // Establecer valores por defecto para llaves
             document.getElementById('pickup-date').value = currentDate;
             document.getElementById('pickup-time').value = currentTime;
-        }
-
-        // Array para almacenar los registros de llaves
-        let keys = JSON.parse(localStorage.getItem('keyRecords')) || [];
-
-        // Función para guardar en localStorage
-        function saveToLocalStorage() {
-            localStorage.setItem('keyRecords', JSON.stringify(keys));
+            
+            // Establecer valores por defecto para vehículos
+            document.getElementById('entry-date').value = currentDate;
+            document.getElementById('entry-time').value = currentTime;
         }
 
         // Función para combinar fecha y hora en un formato ISO
         function combineDateTime(date, time) {
             if (!date || !time) return null;
             return `${date}T${time}:00`;
+        }
+
+        // Función para formatear fecha en formato DD/MM/YYYY
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // ========== FUNCIONALIDAD PARA LLAVES ==========
+        
+        // Array para almacenar los registros de llaves
+        let keys = JSON.parse(localStorage.getItem('keyRecords')) || [];
+
+        // Función para guardar llaves en localStorage
+        function saveKeysToLocalStorage() {
+            localStorage.setItem('keyRecords', JSON.stringify(keys));
         }
 
         // Función para autocompletar llaves
@@ -516,7 +686,7 @@
             });
         }
 
-        // Función para agregar un nuevo registro
+        // Función para agregar un nuevo registro de llave
         document.getElementById('key-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -551,7 +721,7 @@
             };
             
             keys.push(newKey);
-            saveToLocalStorage();
+            saveKeysToLocalStorage();
             renderKeys();
             
             // Limpiar formulario
@@ -565,7 +735,7 @@
         });
 
         // Función para marcar llave como entregada
-        function markAsReturned(id) {
+        function markKeyAsReturned(id) {
             const keyIndex = keys.findIndex(k => k.id === id);
             if (keyIndex === -1) return;
             
@@ -579,7 +749,7 @@
             keys[keyIndex].returnDateTime = returnDateTime;
             keys[keyIndex].status = 'Devuelta';
             
-            saveToLocalStorage();
+            saveKeysToLocalStorage();
             renderKeys();
             
             alert('Llave marcada como devuelta');
@@ -627,7 +797,7 @@
                     <td>
                         <div class="action-buttons">
                             ${key.status === 'Prestada' ? 
-                                `<button class="btn btn-sm btn-warning" onclick="markAsReturned(${key.id})">Entregada</button>` : 
+                                `<button class="btn btn-sm btn-warning" onclick="markKeyAsReturned(${key.id})">Entregada</button>` : 
                                 '<span class="text-muted">-</span>'
                             }
                         </div>
@@ -638,25 +808,15 @@
             });
         }
 
-        // Función para formatear fecha en formato DD/MM/YYYY
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        // Función para filtrar por fecha
-        document.getElementById('filter-date').addEventListener('change', function() {
+        // Función para filtrar llaves por fecha
+        document.getElementById('filter-date-keys').addEventListener('change', function() {
             const filterDate = this.value;
             renderKeys(filterDate);
         });
 
-        // Función para exportar a PDF
-        document.getElementById('export-pdf').addEventListener('click', function() {
-            const filterDate = document.getElementById('filter-date').value;
+        // Función para exportar llaves a PDF
+        document.getElementById('export-pdf-keys').addEventListener('click', function() {
+            const filterDate = document.getElementById('filter-date-keys').value;
             let filteredKeys = keys;
             
             if (filterDate) {
@@ -714,12 +874,261 @@
             doc.save(fileName);
         });
 
-        // Inicializar la tabla y establecer fecha/hora actual al cargar la página
+        // ========== FUNCIONALIDAD PARA VEHÍCULOS ==========
+        
+        // Array para almacenar los registros de vehículos
+        let vehicles = JSON.parse(localStorage.getItem('vehicleRecords')) || [];
+
+        // Función para guardar vehículos en localStorage
+        function saveVehiclesToLocalStorage() {
+            localStorage.setItem('vehicleRecords', JSON.stringify(vehicles));
+        }
+
+        // Función para autocompletar vehículos
+        function setupVehicleAutocomplete() {
+            const vehicleInput = document.getElementById('vehicle-plate');
+            const companyInput = document.getElementById('vehicle-company');
+            const autocompleteContainer = document.getElementById('vehicle-autocomplete');
+            
+            vehicleInput.addEventListener('input', function() {
+                const value = this.value.toUpperCase();
+                autocompleteContainer.innerHTML = '';
+                
+                if (value.length < 1) return;
+                
+                const matches = vehicleDatabase.filter(vehicle => 
+                    vehicle.plate.toUpperCase().includes(value) || 
+                    vehicle.company.toUpperCase().includes(value)
+                );
+                
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.innerHTML = `<strong>${match.plate}</strong> - ${match.company}`;
+                    item.addEventListener('click', function() {
+                        vehicleInput.value = match.plate;
+                        companyInput.value = match.company;
+                        autocompleteContainer.innerHTML = '';
+                    });
+                    autocompleteContainer.appendChild(item);
+                });
+                
+                // Si no hay coincidencias, mostrar mensaje
+                if (matches.length === 0) {
+                    const noResults = document.createElement('div');
+                    noResults.innerHTML = 'No se encontraron vehículos';
+                    noResults.style.padding = '10px';
+                    noResults.style.color = '#666';
+                    noResults.style.fontStyle = 'italic';
+                    autocompleteContainer.appendChild(noResults);
+                }
+            });
+            
+            // Cerrar autocompletado al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (e.target !== vehicleInput) {
+                    autocompleteContainer.innerHTML = '';
+                }
+            });
+        }
+
+        // Función para agregar un nuevo registro de vehículo
+        document.getElementById('vehicle-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const vehiclePlate = document.getElementById('vehicle-plate').value.toUpperCase();
+            const vehicleCompany = document.getElementById('vehicle-company').value;
+            const entryDate = document.getElementById('entry-date').value;
+            const entryTime = document.getElementById('entry-time').value;
+            const exitDate = document.getElementById('exit-date').value;
+            const exitTime = document.getElementById('exit-time').value;
+            
+            // Validar que se haya seleccionado un vehículo válido
+            const vehicleExists = vehicleDatabase.some(vehicle => vehicle.plate === vehiclePlate);
+            if (!vehicleExists) {
+                alert('Por favor, seleccione un vehículo válido de la lista');
+                return;
+            }
+            
+            const entryDateTime = combineDateTime(entryDate, entryTime);
+            const exitDateTime = combineDateTime(exitDate, exitTime);
+            
+            const newVehicle = {
+                id: Date.now(),
+                plate: vehiclePlate,
+                company: vehicleCompany,
+                entryDate: entryDate,
+                entryTime: entryTime,
+                entryDateTime: entryDateTime,
+                exitDate: exitDate,
+                exitTime: exitTime,
+                exitDateTime: exitDateTime,
+                status: exitDateTime ? 'Fuera' : 'Dentro',
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            vehicles.push(newVehicle);
+            saveVehiclesToLocalStorage();
+            renderVehicles();
+            
+            // Limpiar formulario
+            document.getElementById('vehicle-form').reset();
+            
+            // Restablecer fecha y hora actual
+            setCurrentDateTime();
+            
+            // Mostrar mensaje de éxito
+            alert('Registro de vehículo guardado correctamente');
+        });
+
+        // Función para marcar vehículo como salida
+        function markVehicleAsExit(id) {
+            const vehicleIndex = vehicles.findIndex(v => v.id === id);
+            if (vehicleIndex === -1) return;
+            
+            const now = new Date();
+            const exitDate = now.toISOString().split('T')[0];
+            const exitTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const exitDateTime = combineDateTime(exitDate, exitTime);
+            
+            vehicles[vehicleIndex].exitDate = exitDate;
+            vehicles[vehicleIndex].exitTime = exitTime;
+            vehicles[vehicleIndex].exitDateTime = exitDateTime;
+            vehicles[vehicleIndex].status = 'Fuera';
+            
+            saveVehiclesToLocalStorage();
+            renderVehicles();
+            
+            alert('Salida de vehículo registrada correctamente');
+        }
+
+        // Función para renderizar la tabla de vehículos
+        function renderVehicles(filterDate = null) {
+            const tbody = document.getElementById('vehicles-table-body');
+            tbody.innerHTML = '';
+            
+            let filteredVehicles = vehicles;
+            
+            if (filterDate) {
+                filteredVehicles = vehicles.filter(vehicle => vehicle.date === filterDate);
+            }
+            
+            document.getElementById('total-vehicles').textContent = `Total: ${filteredVehicles.length}`;
+            
+            if (filteredVehicles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+                return;
+            }
+            
+            filteredVehicles.forEach(vehicle => {
+                const row = document.createElement('tr');
+                
+                // Formatear fechas y horas para mostrar
+                const entryFormatted = vehicle.entryDate && vehicle.entryTime ? 
+                    `${formatDate(vehicle.entryDate)} ${vehicle.entryTime}` : 'No especificado';
+                
+                const exitFormatted = vehicle.exitDate && vehicle.exitTime ? 
+                    `${formatDate(vehicle.exitDate)} ${vehicle.exitTime}` : 'Pendiente';
+                
+                row.innerHTML = `
+                    <td>${vehicle.plate}</td>
+                    <td>${vehicle.company}</td>
+                    <td>${entryFormatted}</td>
+                    <td>${exitFormatted}</td>
+                    <td>
+                        <span class="badge badge-status ${vehicle.status === 'Dentro' ? 'badge-dentro' : 'badge-fuera'}">
+                            ${vehicle.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            ${vehicle.status === 'Dentro' ? 
+                                `<button class="btn btn-sm btn-warning" onclick="markVehicleAsExit(${vehicle.id})">Registrar Salida</button>` : 
+                                '<span class="text-muted">-</span>'
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para filtrar vehículos por fecha
+        document.getElementById('filter-date-vehicles').addEventListener('change', function() {
+            const filterDate = this.value;
+            renderVehicles(filterDate);
+        });
+
+        // Función para exportar vehículos a PDF
+        document.getElementById('export-pdf-vehicles').addEventListener('click', function() {
+            const filterDate = document.getElementById('filter-date-vehicles').value;
+            let filteredVehicles = vehicles;
+            
+            if (filterDate) {
+                filteredVehicles = vehicles.filter(vehicle => vehicle.date === filterDate);
+            }
+            
+            if (filteredVehicles.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(18);
+            doc.text('Registro de Vehículos', 14, 22);
+            
+            // Fecha del reporte
+            doc.setFontSize(12);
+            const reportDate = filterDate ? formatDate(filterDate) : new Date().toLocaleDateString('es-ES');
+            doc.text(`Fecha del reporte: ${reportDate}`, 14, 32);
+            
+            // Tabla
+            const tableColumn = ["Matrícula", "Empresa", "Entrada", "Salida", "Estado"];
+            const tableRows = [];
+            
+            filteredVehicles.forEach(vehicle => {
+                const entryFormatted = vehicle.entryDate && vehicle.entryTime ? 
+                    `${formatDate(vehicle.entryDate)} ${vehicle.entryTime}` : 'No especificado';
+                
+                const exitFormatted = vehicle.exitDate && vehicle.exitTime ? 
+                    `${formatDate(vehicle.exitDate)} ${vehicle.exitTime}` : 'Pendiente';
+                
+                const vehicleData = [
+                    vehicle.plate,
+                    vehicle.company,
+                    entryFormatted,
+                    exitFormatted,
+                    vehicle.status
+                ];
+                tableRows.push(vehicleData);
+            });
+            
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 40,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            
+            // Guardar el PDF
+            const fileName = `registro_vehiculos_${filterDate || new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+        });
+
+        // ========== INICIALIZACIÓN ==========
+        
+        // Inicializar la aplicación al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             setCurrentDateTime();
             setupKeyAutocomplete();
+            setupVehicleAutocomplete();
             renderKeys();
+            renderVehicles();
         });
     </script>
 </body>
 </html>
+
