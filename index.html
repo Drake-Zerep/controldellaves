@@ -235,7 +235,7 @@
                         <div class="col-md-9 mb-3">
                         </div>
                         <div class="col-md-3 mb-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">Registrar Préstamo</button>
+                            <button type="submit" class="btn btn-primary w-100">Registrar</button>
                         </div>
                     </div>
                 </form>
@@ -628,10 +628,8 @@
                         <div class="action-buttons">
                             ${key.status === 'Prestada' ? 
                                 `<button class="btn btn-sm btn-warning" onclick="markAsReturned(${key.id})">Entregada</button>` : 
-                                ''
+                                '<span class="text-muted">-</span>'
                             }
-                            <button class="btn btn-sm btn-primary" onclick="editKey(${key.id})">Editar</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteKey(${key.id})">Eliminar</button>
                         </div>
                     </td>
                 `;
@@ -648,36 +646,6 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
-        }
-
-        // Función para editar un registro
-        function editKey(id) {
-            const key = keys.find(k => k.id === id);
-            if (!key) return;
-            
-            document.getElementById('key-number').value = key.keyNumber;
-            document.getElementById('department').value = key.department;
-            document.getElementById('pickup-date').value = key.pickupDate;
-            document.getElementById('pickup-time').value = key.pickupTime;
-            document.getElementById('person-name').value = key.personName;
-            
-            // Eliminar el registro actual para reemplazarlo
-            deleteKey(id, false);
-        }
-
-        // Función para eliminar un registro
-        function deleteKey(id, confirmDelete = true) {
-            if (confirmDelete && !confirm('¿Estás seguro de que deseas eliminar este registro?')) {
-                return;
-            }
-            
-            keys = keys.filter(key => key.id !== id);
-            saveToLocalStorage();
-            renderKeys();
-            
-            if (confirmDelete) {
-                alert('Registro eliminado correctamente');
-            }
         }
 
         // Función para filtrar por fecha
