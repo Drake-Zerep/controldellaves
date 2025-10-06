@@ -915,7 +915,7 @@
             alert('✅ Todos los datos exportados correctamente\n💾 Respaldo completo generado');
         }
 
-        // Función para importar datos (VERSIÓN CORREGIDA - SIN JQUERY)
+       // Función para importar datos (VERSIÓN MEJORADA)
 function importData() {
     const fileInput = document.getElementById('backupFile');
     const file = fileInput.files[0];
@@ -930,100 +930,100 @@ function importData() {
         try {
             const data = JSON.parse(e.target.result);
             let importedCount = 0;
+            let message = '';
             
             if (Array.isArray(data)) {
-                // Es un archivo individual
+                // Verificar qué tipo de datos contiene el array
                 if (data.length > 0) {
                     if (data[0].keyNumber) {
+                        // Son registros de préstamos
                         localStorage.setItem('keyRecords', JSON.stringify(data));
                         keys = data;
                         renderKeys();
                         importedCount++;
-                        alert('✅ Datos de llaves importados correctamente');
-                    } else if (data[0].plate) {
+                        message += '✅ Registros de préstamos de llaves importados\n';
+                    } 
+                    else if (data[0].number && data[0].department) {
+                        // Es la BASE DE DATOS de llaves (lo que necesitas)
+                        keyDatabase = data;
+                        localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
+                        importedCount++;
+                        message += '✅ BASE DE DATOS de llaves importada\n';
+                        message += '🔍 El autocompletado ahora funcionará correctamente\n';
+                    }
+                    else if (data[0].plate) {
                         localStorage.setItem('vehicleRecords', JSON.stringify(data));
                         vehicles = data;
                         renderVehicles();
                         importedCount++;
-                        alert('✅ Datos de vehículos importados correctamente');
-                    } else if (data[0].cardNumber) {
+                        message += '✅ Registros de vehículos importados\n';
+                    }
+                    else if (data[0].cardNumber) {
                         localStorage.setItem('cardRecords', JSON.stringify(data));
                         cards = data;
                         renderCards();
                         importedCount++;
-                        alert('✅ Datos de tarjetas importados correctamente');
-                    } else if (data[0].number && data[0].department) {
-                        // Es la base de datos de llaves
-                        keyDatabase = data;
-                        localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
-                        importedCount++;
-                        alert('✅ Base de datos de llaves importada correctamente');
+                        message += '✅ Registros de tarjetas importados\n';
                     }
                 }
             } else if (typeof data === 'object') {
-                // Es un archivo completo
+                // Es un archivo completo con múltiples secciones
+                if (data.keyDatabase) {
+                    keyDatabase = data.keyDatabase;
+                    localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
+                    importedCount++;
+                    message += '✅ Base de datos de llaves importada\n';
+                }
                 if (data.keys) {
                     localStorage.setItem('keyRecords', JSON.stringify(data.keys));
                     keys = data.keys;
                     renderKeys();
                     importedCount++;
+                    message += '✅ Registros de llaves importados\n';
+                }
+                if (data.vehicleDatabase) {
+                    vehicleDatabase = data.vehicleDatabase;
+                    localStorage.setItem('vehicleDatabase', JSON.stringify(vehicleDatabase));
+                    importedCount++;
+                    message += '✅ Base de datos de vehículos importada\n';
                 }
                 if (data.vehicles) {
                     localStorage.setItem('vehicleRecords', JSON.stringify(data.vehicles));
                     vehicles = data.vehicles;
                     renderVehicles();
                     importedCount++;
+                    message += '✅ Registros de vehículos importados\n';
+                }
+                if (data.cardDatabase) {
+                    cardDatabase = data.cardDatabase;
+                    localStorage.setItem('cardDatabase', JSON.stringify(cardDatabase));
+                    importedCount++;
+                    message += '✅ Base de datos de tarjetas importada\n';
                 }
                 if (data.cards) {
                     localStorage.setItem('cardRecords', JSON.stringify(data.cards));
                     cards = data.cards;
                     renderCards();
                     importedCount++;
+                    message += '✅ Registros de tarjetas importados\n';
                 }
-                if (data.keyDatabase) {
-                    keyDatabase = data.keyDatabase;
-                    localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
-                    importedCount++;
-                }
-                if (data.vehicleDatabase) {
-                    vehicleDatabase = data.vehicleDatabase;
-                    localStorage.setItem('vehicleDatabase', JSON.stringify(vehicleDatabase));
-                    importedCount++;
-                }
-                if (data.cardDatabase) {
-                    cardDatabase = data.cardDatabase;
-                    localStorage.setItem('cardDatabase', JSON.stringify(cardDatabase));
-                    importedCount++;
-                }
-                
-                if (importedCount > 0) {
-                    alert(`✅ Todos los datos importados correctamente\n📊 ${importedCount} conjuntos de datos restaurados`);
-                } else {
-                    alert('⚠️ No se encontraron datos válidos en el archivo');
-                }
-            } else {
-                alert('❌ Formato de archivo no válido');
             }
             
-            // LIMPIAR y CERRAR MODAL (SIN JQUERY)
+            if (importedCount > 0) {
+                alert(message + `\n📊 Total: ${importedCount} conjuntos importados`);
+            } else {
+                alert('⚠️ No se reconocieron datos válidos en el archivo');
+            }
+            
+            // Cerrar modal y limpiar
             fileInput.value = '';
-            
-            // Cerrar modal usando Bootstrap nativo
-            const modalElement = document.getElementById('backupModal');
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            if (modal) {
-                modal.hide();
-            } else {
-                // Fallback: usar la API de Bootstrap
-                const bsModal = new bootstrap.Modal(modalElement);
-                bsModal.hide();
-            }
+            const modal = bootstrap.Modal.getInstance(document.getElementById('backupModal'));
+            if (modal) modal.hide();
             
             updateBackupInfo();
             
         } catch (error) {
-            alert('❌ Error al importar el archivo: ' + error.message);
-            console.error('Error details:', error);
+            alert('❌ Error al importar: ' + error.message);
         }
     };
     reader.readAsText(file);
@@ -1208,6 +1208,7 @@ function importData() {
     </script>
 </body>
 </html>
+
 
 
 
