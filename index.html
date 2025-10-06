@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control Completo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -259,6 +262,34 @@
     </style>
 </head>
 <body>
+    <!-- Modal de Login -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="login-email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="login-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        <div class="alert alert-danger d-none" id="login-error"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="login-button">Iniciar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="container">
@@ -269,6 +300,9 @@
                 </div>
                 <div class="text-end">
                     <small>Fecha: <span id="current-date"></span></small>
+                    <br>
+                    <small>Usuario: <span id="current-user"></span></small>
+                    <button class="btn btn-sm btn-danger ms-2" id="logout-button" style="display:none">Cerrar Sesión</button>
                 </div>
             </div>
         </div>
@@ -296,14 +330,11 @@
         <div class="tab-content" id="myTabContent">
             <!-- Pestaña de Llaves -->
             <div class="tab-pane fade show active" id="keys" role="tabpanel" aria-labelledby="keys-tab">
-                <!-- Botón para añadir llave -->
                 <div class="add-button-container">
                     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addKeyModal">
                         + Añadir Llave
                     </button>
                 </div>
-
-                <!-- Formulario de registro de llaves -->
                 <div class="card">
                     <div class="card-header">
                         Registrar Préstamo de Llave
@@ -336,8 +367,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-9 mb-3">
-                                </div>
+                                <div class="col-md-9 mb-3"></div>
                                 <div class="col-md-3 mb-3 d-flex align-items-end">
                                     <button type="submit" class="btn btn-primary w-100">Registrar</button>
                                 </div>
@@ -345,8 +375,6 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Listado de llaves -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Listado de Préstamos de Llaves</span>
@@ -366,15 +394,11 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="keys-table-body">
-                                    <!-- Los datos se cargarán aquí dinámicamente -->
-                                </tbody>
+                                <tbody id="keys-table-body"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
-                <!-- Filtros y exportación de llaves -->
                 <div class="filter-section">
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3">
@@ -390,14 +414,11 @@
 
             <!-- Pestaña de Vehículos -->
             <div class="tab-pane fade" id="vehicles" role="tabpanel" aria-labelledby="vehicles-tab">
-                <!-- Botón para añadir vehículo -->
                 <div class="add-button-container">
                     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
                         + Añadir Vehículo
                     </button>
                 </div>
-
-                <!-- Formulario de registro de vehículos -->
                 <div class="card">
                     <div class="card-header">
                         Registro de Entrada/Salida de Vehículos
@@ -433,8 +454,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-9 mb-3">
-                                </div>
+                                <div class="col-md-9 mb-3"></div>
                                 <div class="col-md-3 mb-3 d-flex align-items-end">
                                     <button type="submit" class="btn btn-primary w-100">Registrar</button>
                                 </div>
@@ -442,8 +462,6 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Listado de vehículos -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Listado de Vehículos</span>
@@ -462,15 +480,11 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="vehicles-table-body">
-                                    <!-- Los datos se cargarán aquí dinámicamente -->
-                                </tbody>
+                                <tbody id="vehicles-table-body"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
-                <!-- Filtros y exportación de vehículos -->
                 <div class="filter-section">
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3">
@@ -486,14 +500,11 @@
 
             <!-- Pestaña de Tarjetas -->
             <div class="tab-pane fade" id="cards" role="tabpanel" aria-labelledby="cards-tab">
-                <!-- Botón para añadir tarjeta -->
                 <div class="add-button-container">
                     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addCardModal">
                         + Añadir Tarjeta
                     </button>
                 </div>
-
-                <!-- Formulario de registro de tarjetas -->
                 <div class="card">
                     <div class="card-header">
                         Control de Tarjetas
@@ -529,8 +540,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-9 mb-3">
-                                </div>
+                                <div class="col-md-9 mb-3"></div>
                                 <div class="col-md-3 mb-3 d-flex align-items-end">
                                     <button type="submit" class="btn btn-primary w-100">Registrar</button>
                                 </div>
@@ -538,8 +548,6 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Listado de tarjetas -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Listado de Tarjetas</span>
@@ -558,15 +566,11 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cards-table-body">
-                                    <!-- Los datos se cargarán aquí dinámicamente -->
-                                </tbody>
+                                <tbody id="cards-table-body"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
-                <!-- Filtros y exportación de tarjetas -->
                 <div class="filter-section">
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3">
@@ -589,8 +593,6 @@
         </div>
     </footer>
 
-    <!-- ========== MODALES ========== -->
-
     <!-- Modal Respaldo de Datos -->
     <div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -601,9 +603,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        <strong>⚠️ IMPORTANTE:</strong> Realiza respaldos regularmente para prevenir pérdida de datos.
+                        <strong>⚠️ IMPORTANTE:</strong> Los datos están respaldados automáticamente en la nube. Use las opciones a continuación para descargar copias locales.
                     </div>
-
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card h-100">
@@ -611,18 +612,10 @@
                                     <h6 class="mb-0">📤 Exportar Datos</h6>
                                 </div>
                                 <div class="card-body">
-                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('keys')">
-                                        📋 Exportar Llaves
-                                    </button>
-                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('vehicles')">
-                                        🚗 Exportar Vehículos
-                                    </button>
-                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('cards')">
-                                        💳 Exportar Tarjetas
-                                    </button>
-                                    <button class="btn btn-success w-100" onclick="exportAllData()">
-                                        💾 Exportar Todo
-                                    </button>
+                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('keys')">📋 Exportar Llaves</button>
+                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('vehicles')">🚗 Exportar Vehículos</button>
+                                    <button class="btn btn-outline-success w-100 mb-2" onclick="exportData('cards')">💳 Exportar Tarjetas</button>
+                                    <button class="btn btn-success w-100" onclick="exportAllData()">💾 Exportar Todo</button>
                                 </div>
                             </div>
                         </div>
@@ -633,9 +626,7 @@
                                 </div>
                                 <div class="card-body">
                                     <input type="file" id="backupFile" class="form-control mb-2" accept=".json">
-                                    <button class="btn btn-warning w-100 mb-2" onclick="importData()">
-                                        📂 Importar Datos
-                                    </button>
+                                    <button class="btn btn-warning w-100 mb-2" onclick="importData()">📂 Importar Datos</button>
                                     <div class="form-text">
                                         <small>Seleccione un archivo JSON de respaldo</small>
                                     </div>
@@ -643,7 +634,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="mt-4">
                         <div class="card">
                             <div class="card-header bg-info text-white">
@@ -654,21 +644,13 @@
                                     <small>Esto solo restaura las listas maestras, no afecta los registros existentes.</small>
                                 </div>
                                 <div class="d-grid gap-2">
-                                    <button class="btn btn-outline-info" onclick="restoreDefaultKeys()">
-                                        🔑 Restaurar Llaves Predeterminadas
-                                    </button>
-                                    <button class="btn btn-outline-info" onclick="restoreDefaultVehicles()">
-                                        🚗 Restaurar Vehículos Predeterminados
-                                    </button>
-                                    <button class="btn btn-outline-info" onclick="restoreDefaultCards()">
-                                        💳 Restaurar Tarjetas Predeterminadas
-                                    </button>
+                                    <button class="btn btn-outline-info" onclick="restoreDefaultKeys()">🔑 Restaurar Llaves Predeterminadas</button>
+                                    <button class="btn btn-outline-info" onclick="restoreDefaultVehicles()">🚗 Restaurar Vehículos Predeterminados</button>
+                                    <button class="btn btn-outline-info" onclick="restoreDefaultCards()">💳 Restaurar Tarjetas Predeterminadas</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Información de respaldos -->
                     <div class="mt-3">
                         <div class="card">
                             <div class="card-header bg-secondary text-white">
@@ -688,9 +670,6 @@
                                         <strong>Tarjetas:</strong><br>
                                         <span id="backup-cards-count">0 registros</span>
                                     </div>
-                                </div>
-                                <div class="mt-2">
-                                    <small class="text-muted" id="last-backup-info"></small>
                                 </div>
                             </div>
                         </div>
@@ -794,244 +773,243 @@
         // Inicializar jsPDF
         const { jsPDF } = window.jspdf;
 
+        // Configuración de Firebase (REEMPLAZA CON TU CONFIGURACIÓN)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcjX8EpgujH8G5U17Iutd8MweKk95J3Us",
+            authDomain: "sistema-control-5b4fc.firebaseapp.com",
+            projectId: "sistema-control-5b4fc",
+            storageBucket: "sistema-control-5b4fc.firebasestorage.app",
+            messagingSenderId: "95208528989",
+            appId: "1:95208528989:web:3bfb9ab0b9689212d141b4"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
         // Mostrar fecha actual
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES');
 
-        // ========== BASE DE DATOS DE LLAVES ==========
-        let keyDatabase = JSON.parse(localStorage.getItem('keyDatabase')) || [
-            { number: "1", department: "Economato" },
-            { number: "2", department: "Restaurante babbo american grill" },
-            { number: "3", department: "Cocina babbo american grill" },
-            { number: "4", department: "Coco café" },
-            { number: "5", department: "Copia (52) Neveras" },
-            { number: "6", department: "Restaurante las rocas - barra" },
-            { number: "7", department: "Sala kentia" },
-            { number: "8", department: "Lava bar" },
-            { number: "9", department: "" },
-            { number: "10", department: "Rest. ugo e vandino" },
-            { number: "11", department: "Oficina director" },
-            { number: "12", department: "Oficina director a.b." },
-            { number: "13", department: "Candado neveras ugo&vandino" },
-            { number: "14", department: "Oficina del cheff" },
-            { number: "15", department: "Camara de cocinas 1" },
-            { number: "16", department: "Sugar reef" },
-            { number: "17", department: "Ex sala de arte" },
-            { number: "18", department: "Sunset bar" },
-            { number: "19", department: "Barefoot grill" },
-            { number: "20", department: "Lenceria" }
-        ];
+        // ========== AUTENTICACIÓN ==========
+        function showLoginModal() {
+            const modal = new bootstrap.Modal(document.getElementById('loginModal'), { backdrop: 'static', keyboard: false });
+            modal.show();
+        }
 
-        // ========== BASE DE DATOS DE VEHÍCULOS ==========
-        let vehicleDatabase = JSON.parse(localStorage.getItem('vehicleDatabase')) || [
-            { plate: "8173CTG", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
-            { plate: "6952GSC", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
-            { plate: "7264HTK", company: "7ISLA" },
-            { plate: "6952DSC", company: "7ISLA" },
-            { plate: "5533JPW", company: "ACQUAJET" },
-            { plate: "7736KBY", company: "ADEJE LIMPIO" },
-            { plate: "3189LDF", company: "ADEJE LIMPIO" },
-            { plate: "8128FLF", company: "ADEJE LIMPIO" }
-        ];
+        document.getElementById('login-button').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                errorDiv.classList.add('d-none');
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+            } catch (error) {
+                errorDiv.classList.remove('d-none');
+                errorDiv.textContent = 'Error: ' + error.message;
+            }
+        });
 
-        // ========== BASE DE DATOS DE TARJETAS ==========
-        let cardDatabase = JSON.parse(localStorage.getItem('cardDatabase')) || [
-            { number: "1", owner: "MOISES VEGUILLA BERNAL" },
-            { number: "2", owner: "JUAN CARLOS COELLO HERNANDEZ" },
-            { number: "3", owner: "RICARDO JACINTO" },
-            { number: "4", owner: "RENIER MARTINEZ DOMINGUEZ" },
-            { number: "5", owner: "RICHARD JONAY PEREZ VENEECKEN" },
-            { number: "6", owner: "NANCY HORTENCIA ALVAREZ" },
-            { number: "7", owner: "CAMARERA PISOS GUARDIA" },
-            { number: "8", owner: "EVA MARIA ARZOLA ARZOLA" },
-            { number: "9", owner: "IRENE CABRERA RAMOS" },
-            { number: "10", owner: "FELIX JAVIER EXPOSITO" },
-            { number: "100", owner: "JUAN CARLOS MESA NIEBLA" },
-            { number: "101", owner: "ANTONIO VICENTE ALVAREZ BRITO" },
-            { number: "102", owner: "SPA" }
-        ];
+        document.getElementById('logout-button').addEventListener('click', () => {
+            auth.signOut();
+        });
+
+        auth.onAuthStateChanged(user => {
+            const logoutButton = document.getElementById('logout-button');
+            const currentUser = document.getElementById('current-user');
+            if (user) {
+                currentUser.textContent = user.email;
+                logoutButton.style.display = 'inline-block';
+                initializeApp();
+            } else {
+                currentUser.textContent = 'No autenticado';
+                logoutButton.style.display = 'none';
+                showLoginModal();
+            }
+        });
+
+        // ========== FUNCIONES DE BASE DE DATOS ==========
+        async function loadKeyDatabase() {
+            const snapshot = await db.collection('keyDatabase').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        async function loadVehicleDatabase() {
+            const snapshot = await db.collection('vehicleDatabase').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        async function loadCardDatabase() {
+            const snapshot = await db.collection('cardDatabase').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
 
         // ========== SISTEMA DE RESPALDO ==========
-
-        // Función para exportar datos
-        function exportData(type) {
+        async function exportData(type) {
             let data, filename;
-            
-            switch(type) {
+            switch (type) {
                 case 'keys':
-                    data = JSON.parse(localStorage.getItem('keyRecords')) || [];
+                    const keySnapshot = await db.collection('keys').get();
+                    data = keySnapshot.docs.map(doc => doc.data());
                     filename = `respaldo_llaves_${new Date().toISOString().split('T')[0]}.json`;
                     break;
                 case 'vehicles':
-                    data = JSON.parse(localStorage.getItem('vehicleRecords')) || [];
+                    const vehicleSnapshot = await db.collection('vehicles').get();
+                    data = vehicleSnapshot.docs.map(doc => doc.data());
                     filename = `respaldo_vehiculos_${new Date().toISOString().split('T')[0]}.json`;
                     break;
                 case 'cards':
-                    data = JSON.parse(localStorage.getItem('cardRecords')) || [];
+                    const cardSnapshot = await db.collection('cards').get();
+                    data = cardSnapshot.docs.map(doc => doc.data());
                     filename = `respaldo_tarjetas_${new Date().toISOString().split('T')[0]}.json`;
                     break;
             }
-            
             const dataStr = JSON.stringify(data, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
             const link = document.createElement('a');
             link.href = url;
             link.download = filename;
             link.click();
-            
             URL.revokeObjectURL(url);
             alert(`✅ Datos de ${type} exportados correctamente\n📁 Archivo: ${filename}`);
         }
 
-        // Función para exportar todos los datos
-        function exportAllData() {
+        async function exportAllData() {
             const allData = {
-                keys: JSON.parse(localStorage.getItem('keyRecords')) || [],
-                vehicles: JSON.parse(localStorage.getItem('vehicleRecords')) || [],
-                cards: JSON.parse(localStorage.getItem('cardRecords')) || [],
-                keyDatabase: keyDatabase,
-                vehicleDatabase: vehicleDatabase,
-                cardDatabase: cardDatabase,
+                keys: (await db.collection('keys').get()).docs.map(doc => doc.data()),
+                vehicles: (await db.collection('vehicles').get()).docs.map(doc => doc.data()),
+                cards: (await db.collection('cards').get()).docs.map(doc => doc.data()),
+                keyDatabase: (await db.collection('keyDatabase').get()).docs.map(doc => doc.data()),
+                vehicleDatabase: (await db.collection('vehicleDatabase').get()).docs.map(doc => doc.data()),
+                cardDatabase: (await db.collection('cardDatabase').get docs => doc.data()),
                 exportDate: new Date().toISOString(),
                 system: "Sistema de Control Completo"
             };
-            
             const dataStr = JSON.stringify(allData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
             const link = document.createElement('a');
             link.href = url;
             link.download = `respaldo_completo_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            
             URL.revokeObjectURL(url);
-            
-            // Guardar fecha del último respaldo
-            localStorage.setItem('lastBackup', new Date().toISOString());
-            updateBackupInfo();
-            
             alert('✅ Todos los datos exportados correctamente\n💾 Respaldo completo generado');
         }
 
-       // Función para importar datos (VERSIÓN MEJORADA)
-function importData() {
-    const fileInput = document.getElementById('backupFile');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('❌ Por favor, seleccione un archivo de respaldo');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            let importedCount = 0;
-            let message = '';
-            
-            if (Array.isArray(data)) {
-                // Verificar qué tipo de datos contiene el array
-                if (data.length > 0) {
-                    if (data[0].keyNumber) {
-                        // Son registros de préstamos
-                        localStorage.setItem('keyRecords', JSON.stringify(data));
-                        keys = data;
-                        renderKeys();
-                        importedCount++;
-                        message += '✅ Registros de préstamos de llaves importados\n';
-                    } 
-                    else if (data[0].number && data[0].department) {
-                        // Es la BASE DE DATOS de llaves (lo que necesitas)
-                        keyDatabase = data;
-                        localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
-                        importedCount++;
-                        message += '✅ BASE DE DATOS de llaves importada\n';
-                        message += '🔍 El autocompletado ahora funcionará correctamente\n';
-                    }
-                    else if (data[0].plate) {
-                        localStorage.setItem('vehicleRecords', JSON.stringify(data));
-                        vehicles = data;
-                        renderVehicles();
-                        importedCount++;
-                        message += '✅ Registros de vehículos importados\n';
-                    }
-                    else if (data[0].cardNumber) {
-                        localStorage.setItem('cardRecords', JSON.stringify(data));
-                        cards = data;
-                        renderCards();
-                        importedCount++;
-                        message += '✅ Registros de tarjetas importados\n';
-                    }
-                }
-            } else if (typeof data === 'object') {
-                // Es un archivo completo con múltiples secciones
-                if (data.keyDatabase) {
-                    keyDatabase = data.keyDatabase;
-                    localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
-                    importedCount++;
-                    message += '✅ Base de datos de llaves importada\n';
-                }
-                if (data.keys) {
-                    localStorage.setItem('keyRecords', JSON.stringify(data.keys));
-                    keys = data.keys;
-                    renderKeys();
-                    importedCount++;
-                    message += '✅ Registros de llaves importados\n';
-                }
-                if (data.vehicleDatabase) {
-                    vehicleDatabase = data.vehicleDatabase;
-                    localStorage.setItem('vehicleDatabase', JSON.stringify(vehicleDatabase));
-                    importedCount++;
-                    message += '✅ Base de datos de vehículos importada\n';
-                }
-                if (data.vehicles) {
-                    localStorage.setItem('vehicleRecords', JSON.stringify(data.vehicles));
-                    vehicles = data.vehicles;
-                    renderVehicles();
-                    importedCount++;
-                    message += '✅ Registros de vehículos importados\n';
-                }
-                if (data.cardDatabase) {
-                    cardDatabase = data.cardDatabase;
-                    localStorage.setItem('cardDatabase', JSON.stringify(cardDatabase));
-                    importedCount++;
-                    message += '✅ Base de datos de tarjetas importada\n';
-                }
-                if (data.cards) {
-                    localStorage.setItem('cardRecords', JSON.stringify(data.cards));
-                    cards = data.cards;
-                    renderCards();
-                    importedCount++;
-                    message += '✅ Registros de tarjetas importados\n';
-                }
+        async function importData() {
+            const fileInput = document.getElementById('backupFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('❌ Por favor, seleccione un archivo de respaldo');
+                return;
             }
-            
-            if (importedCount > 0) {
-                alert(message + `\n📊 Total: ${importedCount} conjuntos importados`);
-            } else {
-                alert('⚠️ No se reconocieron datos válidos en el archivo');
-            }
-            
-            // Cerrar modal y limpiar
-            fileInput.value = '';
-            const modal = bootstrap.Modal.getInstance(document.getElementById('backupModal'));
-            if (modal) modal.hide();
-            
-            updateBackupInfo();
-            
-        } catch (error) {
-            alert('❌ Error al importar: ' + error.message);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let importedCount = 0;
+                    let message = '';
+                    if (Array.isArray(data)) {
+                        if (data.length > 0) {
+                            if (data[0].keyNumber) {
+                                for (const item of data) {
+                                    await db.collection('keys').add(item);
+                                }
+                                renderKeys();
+                                importedCount++;
+                                message += '✅ Registros de llaves importados\n';
+                            } else if (data[0].number && data[0].department) {
+                                for (const item of data) {
+                                    await db.collection('keyDatabase').add(item);
+                                }
+                                setupKeyAutocomplete();
+                                importedCount++;
+                                message += '✅ Base de datos de llaves importada\n';
+                            } else if (data[0].plate) {
+                                for (const item of data) {
+                                    await db.collection('vehicles').add(item);
+                                }
+                                renderVehicles();
+                                importedCount++;
+                                message += '✅ Registros de vehículos importados\n';
+                            } else if (data[0].cardNumber) {
+                                for (const item of data) {
+                                    await db.collection('cards').add(item);
+                                }
+                                renderCards();
+                                importedCount++;
+                                message += '✅ Registros de tarjetas importados\n';
+                            }
+                        }
+                    } else if (typeof data === 'object') {
+                        if (data.keyDatabase) {
+                            for (const item of data.keyDatabase) {
+                                await db.collection('keyDatabase').add(item);
+                            }
+                            setupKeyAutocomplete();
+                            importedCount++;
+                            message += '✅ Base de datos de llaves importada\n';
+                        }
+                        if (data.keys) {
+                            for (const item of data.keys) {
+                                await db.collection('keys').add(item);
+                            }
+                            renderKeys();
+                            importedCount++;
+                            message += '✅ Registros de llaves importados\n';
+                        }
+                        if (data.vehicleDatabase) {
+                            for (const item of data.vehicleDatabase) {
+                                await db.collection('vehicleDatabase').add(item);
+                            }
+                            setupVehicleAutocomplete();
+                            importedCount++;
+                            message += '✅ Base de datos de vehículos importada\n';
+                        }
+                        if (data.vehicles) {
+                            for (const item of data.vehicles) {
+                                await db.collection('vehicles').add(item);
+                            }
+                            renderVehicles();
+                            importedCount++;
+                            message += '✅ Registros de vehículos importados\n';
+                        }
+                        if (data.cardDatabase) {
+                            for (const item of data.cardDatabase) {
+                                await db.collection('cardDatabase').add(item);
+                            }
+                            setupCardAutocomplete();
+                            importedCount++;
+                            message += '✅ Base de datos de tarjetas importada\n';
+                        }
+                        if (data.cards) {
+                            for (const item of data.cards) {
+                                await db.collection('cards').add(item);
+                            }
+                            renderCards();
+                            importedCount++;
+                            message += '✅ Registros de tarjetas importados\n';
+                        }
+                    }
+                    if (importedCount > 0) {
+                        alert(message + `\n📊 Total: ${importedCount} conjuntos importados`);
+                    } else {
+                        alert('⚠️ No se reconocieron datos válidos en el archivo');
+                    }
+                    fileInput.value = '';
+                    bootstrap.Modal.getInstance(document.getElementById('backupModal')).hide();
+                    updateBackupInfo();
+                } catch (error) {
+                    alert('❌ Error al importar: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
         }
-    };
-    reader.readAsText(file);
-}
 
-        // Funciones para restaurar bases de datos predeterminadas
-        function restoreDefaultKeys() {
-            if (confirm('¿Está seguro de que desea restaurar la base de datos de llaves a los valores predeterminados?\n\nEsto restablecerá la lista maestra de llaves disponibles.')) {
+        async function restoreDefaultKeys() {
+            if (confirm('¿Está seguro de que desea restaurar la base de datos de llaves a los valores predeterminados?')) {
                 const defaultKeys = [
                     { number: "1", department: "Economato" },
                     { number: "2", department: "Restaurante babbo american grill" },
@@ -1054,15 +1032,19 @@ function importData() {
                     { number: "19", department: "Barefoot grill" },
                     { number: "20", department: "Lenceria" }
                 ];
-                
-                keyDatabase = defaultKeys;
-                localStorage.setItem('keyDatabase', JSON.stringify(keyDatabase));
-                alert('✅ Base de datos de llaves restaurada a valores predeterminados');
+                await db.collection('keyDatabase').get().then(snapshot => {
+                    snapshot.forEach(doc => doc.ref.delete());
+                });
+                for (const key of defaultKeys) {
+                    await db.collection('keyDatabase').add(key);
+                }
+                setupKeyAutocomplete();
+                alert('✅ Base de datos de llaves restaurada');
             }
         }
 
-        function restoreDefaultVehicles() {
-            if (confirm('¿Está seguro de que desea restaurar la base de datos de vehículos a los valores predeterminados?\n\nEsto restablecerá la lista maestra de vehículos disponibles.')) {
+        async function restoreDefaultVehicles() {
+            if (confirm('¿Está seguro de que desea restaurar la base de datos de vehículos a los valores predeterminados?')) {
                 const defaultVehicles = [
                     { plate: "8173CTG", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
                     { plate: "6952GSC", company: "7 ISLAS, PISCINAS Y HORMIGONES" },
@@ -1073,15 +1055,19 @@ function importData() {
                     { plate: "3189LDF", company: "ADEJE LIMPIO" },
                     { plate: "8128FLF", company: "ADEJE LIMPIO" }
                 ];
-                
-                vehicleDatabase = defaultVehicles;
-                localStorage.setItem('vehicleDatabase', JSON.stringify(vehicleDatabase));
-                alert('✅ Base de datos de vehículos restaurada a valores predeterminados');
+                await db.collection('vehicleDatabase').get().then(snapshot => {
+                    snapshot.forEach(doc => doc.ref.delete());
+                });
+                for (const vehicle of defaultVehicles) {
+                    await db.collection('vehicleDatabase').add(vehicle);
+                }
+                setupVehicleAutocomplete();
+                alert('✅ Base de datos de vehículos restaurada');
             }
         }
 
-        function restoreDefaultCards() {
-            if (confirm('¿Está seguro de que desea restaurar la base de datos de tarjetas a los valores predeterminados?\n\nEsto restablecerá la lista maestra de tarjetas disponibles.')) {
+        async function restoreDefaultCards() {
+            if (confirm('¿Está seguro de que desea restaurar la base de datos de tarjetas a los valores predeterminados?')) {
                 const defaultCards = [
                     { number: "1", owner: "MOISES VEGUILLA BERNAL" },
                     { number: "2", owner: "JUAN CARLOS COELLO HERNANDEZ" },
@@ -1097,114 +1083,477 @@ function importData() {
                     { number: "101", owner: "ANTONIO VICENTE ALVAREZ BRITO" },
                     { number: "102", owner: "SPA" }
                 ];
-                
-                cardDatabase = defaultCards;
-                localStorage.setItem('cardDatabase', JSON.stringify(cardDatabase));
-                alert('✅ Base de datos de tarjetas restaurada a valores predeterminados');
+                await db.collection('cardDatabase').get().then(snapshot => {
+                    snapshot.forEach(doc => doc.ref.delete());
+                });
+                for (const card of defaultCards) {
+                    await db.collection('cardDatabase').add(card);
+                }
+                setupCardAutocomplete();
+                alert('✅ Base de datos de tarjetas restaurada');
             }
         }
 
-        // Actualizar información de respaldos
-        function updateBackupInfo() {
-            const keysCount = (JSON.parse(localStorage.getItem('keyRecords')) || []).length;
-            const vehiclesCount = (JSON.parse(localStorage.getItem('vehicleRecords')) || []).length;
-            const cardsCount = (JSON.parse(localStorage.getItem('cardRecords')) || []).length;
-            const lastBackup = localStorage.getItem('lastBackup');
-            
+        async function updateBackupInfo() {
+            const keysCount = (await db.collection('keys').get()).docs.length;
+            const vehiclesCount = (await db.collection('vehicles').get()).docs.length;
+            const cardsCount = (await db.collection('cards').get()).docs.length;
             document.getElementById('backup-keys-count').textContent = `${keysCount} registros`;
             document.getElementById('backup-vehicles-count').textContent = `${vehiclesCount} registros`;
             document.getElementById('backup-cards-count').textContent = `${cardsCount} registros`;
-            
-            if (lastBackup) {
-                const lastBackupDate = new Date(lastBackup);
-                document.getElementById('last-backup-info').textContent = 
-                    `Último respaldo: ${lastBackupDate.toLocaleDateString()} ${lastBackupDate.toLocaleTimeString()}`;
-            } else {
-                document.getElementById('last-backup-info').textContent = 'No se han realizado respaldos';
-            }
-        }
-
-        // Respaldo automático cada 24 horas
-        function setupAutoBackup() {
-            const lastBackup = localStorage.getItem('lastAutoBackup');
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (lastBackup !== today) {
-                // Podrías implementar un respaldo automático aquí si lo deseas
-                localStorage.setItem('lastAutoBackup', today);
-            }
         }
 
         // ========== FUNCIONES GENERALES ==========
-        
-        // Establecer fecha y hora actual por defecto
         function setCurrentDateTime() {
             const now = new Date();
-            
-            // Formatear fecha como YYYY-MM-DD
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const currentDate = `${year}-${month}-${day}`;
-            
-            // Formatear hora como HH:MM
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const currentTime = `${hours}:${minutes}`;
-            
-            // Establecer valores por defecto para llaves
             document.getElementById('pickup-date').value = currentDate;
             document.getElementById('pickup-time').value = currentTime;
-            
-            // Establecer valores por defecto para vehículos
             document.getElementById('entry-date').value = currentDate;
             document.getElementById('entry-time').value = currentTime;
-            
-            // Establecer valores por defecto para tarjetas
             document.getElementById('card-pickup-date').value = currentDate;
             document.getElementById('card-pickup-time').value = currentTime;
         }
 
-        // Función para combinar fecha y hora en un formato ISO
         function combineDateTime(date, time) {
             if (!date || !time) return null;
             return `${date}T${time}:00`;
         }
 
-        // Función para formatear fecha en formato DD/MM/YYYY
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // ========== AUTOCOMPLETADO ==========
+        async function setupKeyAutocomplete() {
+            const keyInput = document.getElementById('key-number');
+            const departmentInput = document.getElementById('department');
+            const autocompleteDiv = document.getElementById('key-autocomplete');
+            const keys = await loadKeyDatabase();
+            keyInput.addEventListener('input', () => {
+                const value = keyInput.value.toLowerCase();
+                autocompleteDiv.innerHTML = '';
+                if (!value) return;
+                const matches = keys.filter(key => 
+                    key.number.toLowerCase().includes(value) || 
+                    key.department.toLowerCase().includes(value)
+                );
+                matches.forEach(key => {
+                    const div = document.createElement('div');
+                    div.textContent = `${key.number} - ${key.department}`;
+                    div.addEventListener('click', () => {
+                        keyInput.value = key.number;
+                        departmentInput.value = key.department;
+                        autocompleteDiv.innerHTML = '';
+                    });
+                    autocompleteDiv.appendChild(div);
+                });
+            });
+        }
+
+        async function setupVehicleAutocomplete() {
+            const plateInput = document.getElementById('vehicle-plate');
+            const companyInput = document.getElementById('vehicle-company');
+            const autocompleteDiv = document.getElementById('vehicle-autocomplete');
+            const vehicles = await loadVehicleDatabase();
+            plateInput.addEventListener('input', () => {
+                const value = plateInput.value.toLowerCase();
+                autocompleteDiv.innerHTML = '';
+                if (!value) return;
+                const matches = vehicles.filter(vehicle => 
+                    vehicle.plate.toLowerCase().includes(value) || 
+                    vehicle.company.toLowerCase().includes(value)
+                );
+                matches.forEach(vehicle => {
+                    const div = document.createElement('div');
+                    div.textContent = `${vehicle.plate} - ${vehicle.company}`;
+                    div.addEventListener('click', () => {
+                        plateInput.value = vehicle.plate;
+                        companyInput.value = vehicle.company;
+                        autocompleteDiv.innerHTML = '';
+                    });
+                    autocompleteDiv.appendChild(div);
+                });
+            });
+        }
+
+        async function setupCardAutocomplete() {
+            const cardInput = document.getElementById('card-number');
+            const ownerInput = document.getElementById('card-owner');
+            const autocompleteDiv = document.getElementById('card-autocomplete');
+            const cards = await loadCardDatabase();
+            cardInput.addEventListener('input', () => {
+                const value = cardInput.value.toLowerCase();
+                autocompleteDiv.innerHTML = '';
+                if (!value) return;
+                const matches = cards.filter(card => 
+                    card.number.toLowerCase().includes(value) || 
+                    card.owner.toLowerCase().includes(value)
+                );
+                matches.forEach(card => {
+                    const div = document.createElement('div');
+                    div.textContent = `${card.number} - ${card.owner}`;
+                    div.addEventListener('click', () => {
+                        cardInput.value = card.number;
+                        ownerInput.value = card.owner;
+                        autocompleteDiv.innerHTML = '';
+                    });
+                    autocompleteDiv.appendChild(div);
+                });
+            });
+        }
+
+        // ========== RENDERIZADO DE TABLAS ==========
+        async function renderKeys(filterDate = null) {
+            let query = db.collection('keys').orderBy('pickup', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('pickup', '>=', start.toISOString()).where('pickup', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const keys = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const tableBody = document.getElementById('keys-table-body');
+            tableBody.innerHTML = '';
+            keys.forEach(key => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key.keyNumber}</td>
+                    <td>${key.department}</td>
+                    <td>${key.person}</td>
+                    <td>${formatDate(key.pickup)}</td>
+                    <td>${key.return ? formatDate(key.return) : ''}</td>
+                    <td><span class="badge badge-${key.status === 'prestada' ? 'prestada' : 'disponible'}">${key.status}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="returnKey('${key.id}')">Devolver</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteKey('${key.id}')">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            document.getElementById('total-keys').textContent = `Total: ${keys.length}`;
+        }
+
+        async function renderVehicles(filterDate = null) {
+            let query = db.collection('vehicles').orderBy('entry', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('entry', '>=', start.toISOString()).where('entry', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const tableBody = document.getElementById('vehicles-table-body');
+            tableBody.innerHTML = '';
+            vehicles.forEach(vehicle => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${vehicle.plate}</td>
+                    <td>${vehicle.company}</td>
+                    <td>${formatDate(vehicle.entry)}</td>
+                    <td>${vehicle.exit ? formatDate(vehicle.exit) : ''}</td>
+                    <td><span class="badge badge-${vehicle.status === 'dentro' ? 'dentro' : 'fuera'}">${vehicle.status}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="exitVehicle('${vehicle.id}')">Salida</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${vehicle.id}')">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            document.getElementById('total-vehicles').textContent = `Total: ${vehicles.length}`;
+        }
+
+        async function renderCards(filterDate = null) {
+            let query = db.collection('cards').orderBy('pickup', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('pickup', '>=', start.toISOString()).where('pickup', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const tableBody = document.getElementById('cards-table-body');
+            tableBody.innerHTML = '';
+            cards.forEach(card => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${card.cardNumber}</td>
+                    <td>${card.owner}</td>
+                    <td>${formatDate(card.pickup)}</td>
+                    <td>${card.return ? formatDate(card.return) : ''}</td>
+                    <td><span class="badge badge-${card.status === 'activa' ? 'activa' : 'entregada'}">${card.status}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="returnCard('${card.id}')">Devolver</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCard('${card.id}')">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            document.getElementById('total-cards').textContent = `Total: ${cards.length}`;
+        }
+
+        // ========== ACCIONES ==========
+        async function saveNewKey() {
+            const number = document.getElementById('new-key-number').value;
+            const department = document.getElementById('new-key-department').value;
+            await db.collection('keyDatabase').add({ number, department });
+            setupKeyAutocomplete();
+            bootstrap.Modal.getInstance(document.getElementById('addKeyModal')).hide();
+            alert('✅ Llave añadida');
+        }
+
+        async function saveNewVehicle() {
+            const plate = document.getElementById('new-vehicle-plate').value;
+            const company = document.getElementById('new-vehicle-company').value;
+            await db.collection('vehicleDatabase').add({ plate, company });
+            setupVehicleAutocomplete();
+            bootstrap.Modal.getInstance(document.getElementById('addVehicleModal')).hide();
+            alert('✅ Vehículo añadido');
+        }
+
+        async function saveNewCard() {
+            const number = document.getElementById('new-card-number').value;
+            const owner = document.getElementById('new-card-owner').value;
+            await db.collection('cardDatabase').add({ number, owner });
+            setupCardAutocomplete();
+            bootstrap.Modal.getInstance(document.getElementById('addCardModal')).hide();
+            alert('✅ Tarjeta añadida');
+        }
+
+        async function returnKey(id) {
+            await db.collection('keys').doc(id).update({
+                return: new Date().toISOString(),
+                status: 'disponible'
+            });
+            renderKeys();
+        }
+
+        async function exitVehicle(id) {
+            await db.collection('vehicles').doc(id).update({
+                exit: new Date().toISOString(),
+                status: 'fuera'
+            });
+            renderVehicles();
+        }
+
+        async function returnCard(id) {
+            await db.collection('cards').doc(id).update({
+                return: new Date().toISOString(),
+                status: 'entregada'
+            });
+            renderCards();
+        }
+
+        async function deleteKey(id) {
+            if (confirm('¿Eliminar este registro?')) {
+                await db.collection('keys').doc(id).delete();
+                renderKeys();
+            }
+        }
+
+        async function deleteVehicle(id) {
+            if (confirm('¿Eliminar este registro?')) {
+                await db.collection('vehicles').doc(id).delete();
+                renderVehicles();
+            }
+        }
+
+        async function deleteCard(id) {
+            if (confirm('¿Eliminar este registro?')) {
+                await db.collection('cards').doc(id).delete();
+                renderCards();
+            }
+        }
+
+        // ========== EXPORTAR PDF ==========
+        async function exportKeysToPDF() {
+            const filterDate = document.getElementById('filter-date-keys').value;
+            let query = db.collection('keys').orderBy('pickup', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('pickup', '>=', start.toISOString()).where('pickup', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const keys = snapshot.docs.map(doc => doc.data());
+            const doc = new jsPDF();
+            doc.text('Reporte de Llaves', 10, 10);
+            doc.autoTable({
+                head: [['N° Llave', 'Departamento', 'Persona', 'Recogida', 'Entrega', 'Estado']],
+                body: keys.map(key => [
+                    key.keyNumber,
+                    key.department,
+                    key.person,
+                    formatDate(key.pickup),
+                    key.return ? formatDate(key.return) : '',
+                    key.status
+                ])
+            });
+            doc.save(`reporte_llaves_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        async function exportVehiclesToPDF() {
+            const filterDate = document.getElementById('filter-date-vehicles').value;
+            let query = db.collection('vehicles').orderBy('entry', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('entry', '>=', start.toISOString()).where('entry', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const vehicles = snapshot.docs.map(doc => doc.data());
+            const doc = new jsPDF();
+            doc.text('Reporte de Vehículos', 10, 10);
+            doc.autoTable({
+                head: [['Matrícula', 'Empresa', 'Entrada', 'Salida', 'Estado']],
+                body: vehicles.map(vehicle => [
+                    vehicle.plate,
+                    vehicle.company,
+                    formatDate(vehicle.entry),
+                    vehicle.exit ? formatDate(vehicle.exit) : '',
+                    vehicle.status
+                ])
+            });
+            doc.save(`reporte_vehiculos_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        async function exportCardsToPDF() {
+            const filterDate = document.getElementById('filter-date-cards').value;
+            let query = db.collection('cards').orderBy('pickup', 'desc');
+            if (filterDate) {
+                const start = new Date(filterDate);
+                const end = new Date(filterDate);
+                end.setDate(end.getDate() + 1);
+                query = query.where('pickup', '>=', start.toISOString()).where('pickup', '<', end.toISOString());
+            }
+            const snapshot = await query.get();
+            const cards = snapshot.docs.map(doc => doc.data());
+            const doc = new jsPDF();
+            doc.text('Reporte de Tarjetas', 10, 10);
+            doc.autoTable({
+                head: [['N° Tarjeta', 'Propietario', 'Recogida', 'Entrega', 'Estado']],
+                body: cards.map(card => [
+                    card.cardNumber,
+                    card.owner,
+                    formatDate(card.pickup),
+                    card.return ? formatDate(card.return) : '',
+                    card.status
+                ])
+            });
+            doc.save(`reporte_tarjetas_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         // ========== INICIALIZACIÓN ==========
-        
-        // Inicializar la aplicación al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
+        async function initializeApp() {
             setCurrentDateTime();
-            setupKeyAutocomplete();
-            setupVehicleAutocomplete();
-            setupCardAutocomplete();
-            renderKeys();
-            renderVehicles();
-            renderCards();
-            updateBackupInfo();
-            setupAutoBackup();
-            
-            // Configurar event listeners para los modales de añadir elementos
+            await setupKeyAutocomplete();
+            await setupVehicleAutocomplete();
+            await setupCardAutocomplete();
+            await renderKeys();
+            await renderVehicles();
+            await renderCards();
+            await updateBackupInfo();
+
+            document.getElementById('key-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const keyNumber = document.getElementById('key-number').value;
+                const department = document.getElementById('department').value;
+                const person = document.getElementById('person-name').value;
+                const pickup = combineDateTime(
+                    document.getElementById('pickup-date').value,
+                    document.getElementById('pickup-time').value
+                );
+                await db.collection('keys').add({
+                    keyNumber,
+                    department,
+                    person,
+                    pickup,
+                    return: null,
+                    status: 'prestada'
+                });
+                renderKeys();
+                e.target.reset();
+                setCurrentDateTime();
+            });
+
+            document.getElementById('vehicle-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const plate = document.getElementById('vehicle-plate').value;
+                const company = document.getElementById('vehicle-company').value;
+                const entry = combineDateTime(
+                    document.getElementById('entry-date').value,
+                    document.getElementById('entry-time').value
+                );
+                const exit = combineDateTime(
+                    document.getElementById('exit-date').value,
+                    document.getElementById('exit-time').value
+                );
+                await db.collection('vehicles').add({
+                    plate,
+                    company,
+                    entry,
+                    exit: exit || null,
+                    status: exit ? 'fuera' : 'dentro'
+                });
+                renderVehicles();
+                e.target.reset();
+                setCurrentDateTime();
+            });
+
+            document.getElementById('card-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const cardNumber = document.getElementById('card-number').value;
+                const owner = document.getElementById('card-owner').value;
+                const pickup = combineDateTime(
+                    document.getElementById('card-pickup-date').value,
+                    document.getElementById('card-pickup-time').value
+                );
+                const returnDate = combineDateTime(
+                    document.getElementById('card-return-date').value,
+                    document.getElementById('card-return-time').value
+                );
+                await db.collection('cards').add({
+                    cardNumber,
+                    owner,
+                    pickup,
+                    return: returnDate || null,
+                    status: returnDate ? 'entregada' : 'activa'
+                });
+                renderCards();
+                e.target.reset();
+                setCurrentDateTime();
+            });
+
             document.getElementById('save-new-key').addEventListener('click', saveNewKey);
             document.getElementById('save-new-vehicle').addEventListener('click', saveNewVehicle);
             document.getElementById('save-new-card').addEventListener('click', saveNewCard);
-        });
 
-        // Nota: Las funciones setupKeyAutocomplete, setupVehicleAutocomplete, setupCardAutocomplete,
-        // renderKeys, renderVehicles, renderCards, y las funciones de guardado de nuevos elementos
-        // se mantienen igual que en el código anterior para no exceder el límite de caracteres.
-        // El sistema de respaldo está completamente integrado y funcional.
+            document.getElementById('filter-date-keys').addEventListener('change', (e) => renderKeys(e.target.value));
+            document.getElementById('filter-date-vehicles').addEventListener('change', (e) => renderVehicles(e.target.value));
+            document.getElementById('filter-date-cards').addEventListener('change', (e) => renderCards(e.target.value));
+
+            document.getElementById('export-pdf-keys').addEventListener('click', exportKeysToPDF);
+            document.getElementById('export-pdf-vehicles').addEventListener('click', exportVehiclesToPDF);
+            document.getElementById('export-pdf-cards').addEventListener('click', exportCardsToPDF);
+        }
     </script>
 </body>
 </html>
