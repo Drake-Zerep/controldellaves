@@ -64,6 +64,12 @@
             border: none;
         }
         
+        .btn-warning {
+            background-color: #f39c12;
+            border: none;
+            color: white;
+        }
+        
         .table th {
             background-color: var(--secondary-color);
             color: white;
@@ -131,6 +137,39 @@
             flex: 1;
         }
         
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+        
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .autocomplete-active {
+            background-color: var(--primary-color) !important;
+            color: white;
+        }
+        
+        .key-input-container {
+            position: relative;
+        }
+        
         @media (max-width: 768px) {
             .action-buttons {
                 flex-direction: column;
@@ -169,11 +208,15 @@
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label for="key-number" class="form-label">Número de Llave</label>
-                            <input type="text" class="form-control" id="key-number" required>
+                            <div class="key-input-container">
+                                <input type="text" class="form-control" id="key-number" required autocomplete="off">
+                                <div id="key-autocomplete" class="autocomplete-items"></div>
+                            </div>
+                            <small class="form-text text-muted">Comience a escribir el número o nombre de la llave</small>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="department" class="form-label">Departamento</label>
-                            <input type="text" class="form-control" id="department" required>
+                            <input type="text" class="form-control" id="department" required readonly>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="pickup-date" class="form-label">Fecha de Recogida</label>
@@ -183,36 +226,18 @@
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="return-date" class="form-label">Fecha de Entrega</label>
-                            <div class="datetime-inputs">
-                                <input type="date" class="form-control date-input" id="return-date">
-                                <input type="time" class="form-control time-input" id="return-time">
-                            </div>
+                            <label for="person-name" class="form-label">Nombre de la Persona</label>
+                            <input type="text" class="form-control" id="person-name" required>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-9 mb-3">
-                            <label for="person-name" class="form-label">Nombre de la Persona</label>
-                            <input type="text" class="form-control" id="person-name" required>
                         </div>
                         <div class="col-md-3 mb-3 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary w-100">Registrar Préstamo</button>
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- Filtros y exportación -->
-        <div class="filter-section">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-3">
-                    <label for="filter-date" class="form-label">Filtrar por fecha:</label>
-                    <input type="date" class="form-control" id="filter-date">
-                </div>
-                <div class="col-md-6 mb-3 d-flex justify-content-end">
-                    <button id="export-pdf" class="btn btn-success">Exportar a PDF</button>
-                </div>
             </div>
         </div>
 
@@ -243,6 +268,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- Filtros y exportación -->
+        <div class="filter-section">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3">
+                    <label for="filter-date" class="form-label">Filtrar por fecha:</label>
+                    <input type="date" class="form-control" id="filter-date">
+                </div>
+                <div class="col-md-6 mb-3 d-flex justify-content-end">
+                    <button id="export-pdf" class="btn btn-success">Exportar a PDF</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -258,6 +296,30 @@
 
         // Mostrar fecha actual
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES');
+
+        // Base de datos de llaves predefinidas
+        const keyDatabase = [
+            { number: "1", department: "Recepción Principal" },
+            { number: "2", department: "Sala de Juntas A" },
+            { number: "3", department: "Sala de Juntas B" },
+            { number: "4", department: "Almacén Planta Baja" },
+            { number: "5", department: "Archivo" },
+            { number: "6", department: "Sistemas" },
+            { number: "7", department: "Contabilidad" },
+            { number: "8", department: "Dirección" },
+            { number: "9", department: "Cocina" },
+            { number: "10", department: "Comedor" },
+            { number: "11", department: "Limpieza" },
+            { number: "12", department: "Mantenimiento" },
+            { number: "13", department: "Sala de Servidores" },
+            { number: "14", department: "Oficina Chef" },
+            { number: "15", department: "Parking" },
+            { number: "16", department: "Terraza" },
+            { number: "17", department: "Sala Descanso" },
+            { number: "18", department: "Baño Planta 1" },
+            { number: "19", department: "Baño Planta 2" },
+            { number: "20", department: "Entrada Trasera" }
+        ];
 
         // Establecer fecha y hora actual por defecto
         function setCurrentDateTime() {
@@ -293,6 +355,43 @@
             return `${date}T${time}:00`;
         }
 
+        // Función para autocompletar llaves
+        function setupKeyAutocomplete() {
+            const keyInput = document.getElementById('key-number');
+            const departmentInput = document.getElementById('department');
+            const autocompleteContainer = document.getElementById('key-autocomplete');
+            
+            keyInput.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                autocompleteContainer.innerHTML = '';
+                
+                if (value.length < 1) return;
+                
+                const matches = keyDatabase.filter(key => 
+                    key.number.toLowerCase().includes(value) || 
+                    key.department.toLowerCase().includes(value)
+                );
+                
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.innerHTML = `<strong>${match.number}</strong> - ${match.department}`;
+                    item.addEventListener('click', function() {
+                        keyInput.value = match.number;
+                        departmentInput.value = match.department;
+                        autocompleteContainer.innerHTML = '';
+                    });
+                    autocompleteContainer.appendChild(item);
+                });
+            });
+            
+            // Cerrar autocompletado al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (e.target !== keyInput) {
+                    autocompleteContainer.innerHTML = '';
+                }
+            });
+        }
+
         // Función para agregar un nuevo registro
         document.getElementById('key-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -301,12 +400,9 @@
             const department = document.getElementById('department').value;
             const pickupDate = document.getElementById('pickup-date').value;
             const pickupTime = document.getElementById('pickup-time').value;
-            const returnDate = document.getElementById('return-date').value;
-            const returnTime = document.getElementById('return-time').value;
             const personName = document.getElementById('person-name').value;
             
             const pickupDateTime = combineDateTime(pickupDate, pickupTime);
-            const returnDateTime = combineDateTime(returnDate, returnTime);
             
             const newKey = {
                 id: Date.now(),
@@ -315,11 +411,11 @@
                 pickupDate: pickupDate,
                 pickupTime: pickupTime,
                 pickupDateTime: pickupDateTime,
-                returnDate: returnDate,
-                returnTime: returnTime,
-                returnDateTime: returnDateTime,
+                returnDate: null,
+                returnTime: null,
+                returnDateTime: null,
                 personName: personName,
-                status: returnDateTime ? 'Devuelta' : 'Prestada',
+                status: 'Prestada',
                 date: new Date().toISOString().split('T')[0]
             };
             
@@ -336,6 +432,27 @@
             // Mostrar mensaje de éxito
             alert('Préstamo registrado correctamente');
         });
+
+        // Función para marcar llave como entregada
+        function markAsReturned(id) {
+            const keyIndex = keys.findIndex(k => k.id === id);
+            if (keyIndex === -1) return;
+            
+            const now = new Date();
+            const returnDate = now.toISOString().split('T')[0];
+            const returnTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const returnDateTime = combineDateTime(returnDate, returnTime);
+            
+            keys[keyIndex].returnDate = returnDate;
+            keys[keyIndex].returnTime = returnTime;
+            keys[keyIndex].returnDateTime = returnDateTime;
+            keys[keyIndex].status = 'Devuelta';
+            
+            saveToLocalStorage();
+            renderKeys();
+            
+            alert('Llave marcada como devuelta');
+        }
 
         // Función para renderizar la tabla de llaves
         function renderKeys(filterDate = null) {
@@ -378,6 +495,10 @@
                     </td>
                     <td>
                         <div class="action-buttons">
+                            ${key.status === 'Prestada' ? 
+                                `<button class="btn btn-sm btn-warning" onclick="markAsReturned(${key.id})">Entregada</button>` : 
+                                ''
+                            }
                             <button class="btn btn-sm btn-primary" onclick="editKey(${key.id})">Editar</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteKey(${key.id})">Eliminar</button>
                         </div>
@@ -407,8 +528,6 @@
             document.getElementById('department').value = key.department;
             document.getElementById('pickup-date').value = key.pickupDate;
             document.getElementById('pickup-time').value = key.pickupTime;
-            document.getElementById('return-date').value = key.returnDate;
-            document.getElementById('return-time').value = key.returnTime;
             document.getElementById('person-name').value = key.personName;
             
             // Eliminar el registro actual para reemplazarlo
@@ -499,8 +618,10 @@
         // Inicializar la tabla y establecer fecha/hora actual al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             setCurrentDateTime();
+            setupKeyAutocomplete();
             renderKeys();
         });
     </script>
 </body>
 </html>
+
